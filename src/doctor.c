@@ -3,16 +3,21 @@
 
 int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm){
     while (data->terminate == 0){
-        doctor_receive_admission(comm->receptionist_doctor->buffer, doctor_id, data,comm);
         if(comm->receptionist_doctor->buffer->id!=-1){
-            doctor_process_admission(comm->receptionist_doctor->buffer, doctor_id, data);
+        doctor_receive_admission(comm->receptionist_doctor->buffer, doctor_id, data,comm);
         }
     }
     return data->doctor_stats; //numero de consultas realizadas
 }
 
 void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_container* data, struct communication* comm){
-
+    if (data->terminate == 1) {
+        return 0; // ja nao ha mais admissoe spara admitir
+    }
+    if(comm->receptionist_doctor->buffer->requested_doctor == doctor_id){
+        doctor_process_admition(ad, doctor_id, data);
+    }
+    return 0;
 }
 
 void doctor_process_admission(struct admission* ad, int doctor_id, struct data_container* data){
