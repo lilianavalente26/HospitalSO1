@@ -37,4 +37,6 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
     }
     //Atualizar a admission no data
     data->results = ad;
+
+    return 0;
 }
