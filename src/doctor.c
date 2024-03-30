@@ -12,12 +12,14 @@ int execute_doctor(int doctor_id, struct data_container* data, struct communicat
 */
 void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_container* data, struct communication* comm){
     if (data->terminate == 1) {
-        return; // ja nao ha mais admissoe spara admitir
+        return 0; // ja nao ha mais admissoe spara admitir
     }
-    if(ad->requested_doctor == doctor_id){
-        comm->receptionist_doctor; // isto supostamente mostra o que a recepcionsta encaminhou para o doutor
+    else if(comm->receptionist_doctor->buffer->requested_doctor == doctor_id){
+        doctor_process_admition(ad, doctor_id, data);
     }
-    
+    else{
+        return 0;
+    }
 
 }
 
