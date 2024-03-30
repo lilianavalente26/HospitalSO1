@@ -12,7 +12,12 @@
 * outros métodos auxiliares definidos em receptionist.h.
 */
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
-    // TODO
+    while (data->terminate == 0){
+        if(comm->receptionist_doctor->buffer->id!=-1){
+            receptionist_receive_admission(comm->patient_receptionist->buffer,data,comm);
+        }
+    }
+    return data->receptionist_stats; //numero de consultas realizadas
 }
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e os rececionistas.
 * Antes de tentar ler a admissão, deve verificar se data->terminate tem valor 1.
