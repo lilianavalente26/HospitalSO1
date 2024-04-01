@@ -13,11 +13,11 @@
 */
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
     while (data->terminate == 0){
-        if(comm->receptionist_doctor->buffer->id!=-1){
+        if(comm->patient_receptionist->buffer->id!=-1){
             receptionist_receive_admission(comm->patient_receptionist->buffer,data,comm);
         }
     }
-    return data->receptionist_stats; //numero de consultas realizadas
+    return data->receptionist_stats; //numero de admissoes realizadas
 }
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e os rececionistas.
 * Antes de tentar ler a admissão, deve verificar se data->terminate tem valor 1.
@@ -40,5 +40,5 @@ void receptionist_process_admission(struct admission* ad, int receptionist_id, s
 * os rececionistas e os médicos.
 */
 void receptionist_send_admission(struct admission* ad, struct data_container* data, struct communication* comm){
-    // TODO
+    write_receptionist_doctor_buffer(comm->receptionist_doctor, data->buffers_size, ad);
 }

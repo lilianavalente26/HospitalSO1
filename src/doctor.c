@@ -15,7 +15,7 @@ void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_c
         return 0; // ja nao ha mais admissoe spara admitir
     }
     if(comm->receptionist_doctor->buffer->requested_doctor == doctor_id){
-        doctor_process_admition(ad, doctor_id, data);
+        doctor_process_admission(ad, doctor_id, data);
     }
     return 0;
 }
