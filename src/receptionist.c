@@ -28,7 +28,15 @@ void receptionist_receive_admission(struct admission* ad, struct data_container*
 * Atualiza também a admissão na estrutura data.
 */
 void receptionist_process_admission(struct admission* ad, int receptionist_id, struct data_container* data){
-    // TODO
+    //Alterar os dados
+    ad->receiving_receptionist = receptionist_id;
+    ad->status = 'R';
+    data->receptionist_stats++;
+
+    //Atualizar a admission no data
+    data->results = ad;
+
+    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre

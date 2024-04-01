@@ -28,7 +28,13 @@ void patient_receive_admission(struct admission* ad, int patient_id, struct data
 * Atualiza também a admissão na estrutura data.
 */
 void patient_process_admission(struct admission* ad, int patient_id, struct data_container* data){
-    // TODO
+    //Alterar os dados
+    ad->receiving_patient = patient_id;
+    ad->status = 'P';
+    data->patient_stats++;
+
+    //Atualizar a admission no data
+    data->results = ad;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os
