@@ -35,6 +35,8 @@ void patient_process_admission(struct admission* ad, int patient_id, struct data
 
     //Atualizar a admission no data
     data->results = ad;
+
+    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os
