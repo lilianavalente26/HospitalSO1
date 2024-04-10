@@ -12,7 +12,12 @@
 * métodos auxiliares definidos em patient.h.
 */
 int execute_patient(int patient_id, struct data_container* data, struct communication* comm){
-    // TODO
+    while (data->terminate == 0){
+        if(comm->main_patient->buffer->id!=-1){
+            receptionist_receive_admission(comm->main_patient->buffer,data,comm);
+        }
+    }
+    return data->patient_stats; //numero de admissoes pedidas
 }
 /* Função que lê uma admissão (do buffer de memória partilhada entre a main
 * e os pacientes) que seja direcionada a patient_id. Antes de tentar ler a admissão, deve
@@ -43,5 +48,5 @@ void patient_process_admission(struct admission* ad, int patient_id, struct data
 * pacientes e os rececionistas.
 */
 void patient_send_admission(struct admission* ad, struct data_container* data, struct communication* comm){
-    //TODO
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, ad);
 }
