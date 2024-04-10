@@ -14,7 +14,7 @@ int launch_patient(int patient_id, struct data_container* data, struct communica
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
-        perror("fodeu");
+        perror("launch_patient");
         exit(1);
     }
 
@@ -36,7 +36,7 @@ int launch_receptionist(int receptionist_id, struct data_container* data, struct
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
-        perror("fodeu");
+        perror("launch_receptionist");
         exit(1);
     }
 
@@ -58,7 +58,7 @@ int launch_doctor(int doctor_id, struct data_container* data, struct communicati
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
-        perror("fodeu");
+        perror("launch_doctor");
         exit(-1);
     }
 
@@ -80,7 +80,7 @@ int wait_process(int process_id){
     pid_t processo = waitpid(process_id, &status, 0);
     
     if (processo = -1) { /*Houve um erro*/
-        perror("fodeu");
+        perror("wait_process");
         return -1;
     }
 
