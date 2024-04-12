@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <memory.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdio.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
@@ -7,7 +11,7 @@
 * getuid() a name, para tornar o nome único para o processo.
 */
 void* create_shared_memory(char* name, int size){
-    // TODO
+    
 }
 
 /* Função que reserva uma zona de memória dinâmica com tamanho indicado
