@@ -55,7 +55,7 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = ad;
-        in++;
+        buffer->ptrs->in++;
     }
 
     return 0;
@@ -97,19 +97,35 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = ad;
-        in++;
+        buffer->ptrs->in++;
     }
 
     return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre a Main
-* e os pacientes, se houver alguma disponível para ler que seja direcionada ao paciente especificado.
+* e os pacientes, se houver alguma disponível para ler que seja direcionada
+* ao paciente especificado.
 * A leitura deve ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo.
 * Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, int buffer_size, struct admission* ad){
-    // TODO
+    int in = buffer->ptrs->in;
+    int out = buffer->ptrs->out;
+    int written = 0;
+
+    while ((out+1) % buffer_size != in){
+        if (buffer->buffer->requesting_patient = patient_id) {
+            
+            written = 1;
+        }
+        out++;
+    }
+    if (written == 0) {
+        ad->id = -1;
+    }
+        
+    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e rececionistas,
