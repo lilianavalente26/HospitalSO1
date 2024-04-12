@@ -24,7 +24,16 @@ int execute_receptionist(int receptionist_id, struct data_container* data, struc
 * Em caso afirmativo, retorna imediatamente da função.
 */
 void receptionist_receive_admission(struct admission* ad, struct data_container* data, struct communication* comm){
-    // TODO
+    if (data->terminate == 1) {
+        return;
+    }
+    else if (data->receptionist_pids == receptionist_id) {
+        ad->receiving_receptionist = receptionist_id;
+        
+        ad->status = 'R';
+
+        data->receptionist_stats[receptionist_id]++;
+    }
 }
 
 /* Função que realiza uma admissão, alterando o seu campo receiving_receptionist para o id
