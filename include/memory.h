@@ -20,8 +20,8 @@
 #define MAX_RESULTS 100		//constante usada para limitar tamanho de buffer de resultados
 
 struct pointers { 																					
-	int in;  																						
-	int out; 																						
+	int in;  		// indice inial da lista																				
+	int out; 		// indice final da lista																			
 };																								
 
 //estrutura que representa um buffer circular

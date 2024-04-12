@@ -1,4 +1,8 @@
+#include <stdio.h>
 #include "memory.h"
+#include <sys/mman.h> 
+#include <sys/stat.h>  
+#include <fcntl.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
@@ -6,7 +10,24 @@
 * getuid() a name, para tornar o nome único para o processo.
 */
 void* create_shared_memory(char* name, int size){
+    int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
+    int ftruncate(shm, size); 
+    if(shm == -1){
+        perror ("fodeu no bestie create_shared_memory");
+        exit(1);
+    }
+    // com a notacao NULL e o SO que determina automaticamente o endereco
+    // inicial da projecao
+    void* ptrSharedMemory = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+    if(ptrSharedMemory == MAP_FAILED){
+        perror("fodeu a criar o pointer para a shared memory");
+        exit(1);
+    }
 
+    memset(ptrSharedMemory, 0, size);
+
+
+    return ptrSharedMemory;
 }
 
 /* Função que reserva uma zona de memória dinâmica com tamanho indicado
