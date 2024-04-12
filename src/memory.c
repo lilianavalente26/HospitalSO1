@@ -7,7 +7,6 @@
 * getuid() a name, para tornar o nome único para o processo.
 */
 void* create_shared_memory(char* name, int size){
-    // TODO
 }
 
 /* Função que reserva uma zona de memória dinâmica com tamanho indicado
@@ -15,7 +14,17 @@ void* create_shared_memory(char* name, int size){
 * apontador para a mesma.
 */
 void* allocate_dynamic_memory(int size){
-    // TODO
+    //aloca memOria dinAmica com size
+    int ptr* = malloc(size);
+    //Houve erro a alocar
+    if (ptr = NULL){
+        perror("fodeu");
+        exit(1);
+    }
+    //preenche essa zona de memória com o valor 0
+    &ptr = 0;
+    //retorna o apontador para a mesma
+    return ptr;
 }
 
 /* Função que liberta uma zona de memória partilhada previamente reservada.
@@ -27,7 +36,7 @@ void destroy_shared_memory(char* name, void* ptr, int size){
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
 */
 void deallocate_dynamic_memory(void* ptr){
-    // TODO
+    free(ptr);
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre a Main
@@ -36,7 +45,12 @@ void deallocate_dynamic_memory(void* ptr){
 * Se não houver nenhuma posição livre, não escreve nada.
 */
 void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
-    // TODO
+    int in = buffer->ptrs->in;
+    
+    if (in <= buffer_size) {
+        buffer->buffer[in] = ad;
+        in++;
+    }
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os pacientes
@@ -54,7 +68,12 @@ void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buf
 * Se não houver nenhuma posição livre, não escreve nada.
 */
 void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
-    // TODO
+    int in = buffer->ptrs->in;
+    
+    if (in <= buffer_size) {
+        buffer->buffer[in] = ad;
+        in++;
+    }
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre a Main
