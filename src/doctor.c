@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <doctor.h>
+#include "doctor.h"
 
 int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm){
     
