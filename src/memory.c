@@ -51,11 +51,14 @@ void deallocate_dynamic_memory(void* ptr){
 */
 void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
+    int out = buffer->ptrs->out;
     
-    if (in <= buffer_size) {
+    if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = ad;
         in++;
     }
+
+    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os pacientes
@@ -74,11 +77,14 @@ void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buf
 */
 void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
+    int out = buffer->ptrs->out;
     
-    if (in <= buffer_size) {
+    if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = ad;
         in++;
     }
+
+    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre a Main
