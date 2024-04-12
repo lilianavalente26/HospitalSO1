@@ -11,7 +11,24 @@
 * getuid() a name, para tornar o nome único para o processo.
 */
 void* create_shared_memory(char* name, int size){
-    
+    int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
+    int ftruncate(shm, size); 
+    if(shm == -1){
+        perror ("fodeu no bestie create_shared_memory");
+        exit(1);
+    }
+    // com a notacao NULL e o SO que determina automaticamente o endereco
+    // inicial da projecao
+    void* ptrSharedMemory = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+    if(ptrSharedMemory == MAP_FAILED){
+        perror("fodeu a criar o pointer para a shared memory");
+        exit(1);
+    }
+
+    memset(ptrSharedMemory, 0, size);
+
+
+    return ptrSharedMemory;
 }
 
 /* Função que reserva uma zona de memória dinâmica com tamanho indicado
@@ -35,7 +52,19 @@ void* allocate_dynamic_memory(int size){
 /* Função que liberta uma zona de memória partilhada previamente reservada.
 */
 void destroy_shared_memory(char* name, void* ptr, int size){
-    // TODO
+    int statusMap = munmap(ptr, size); 
+
+    if(statusMap == -1){
+        perror("fodeu ao destruir a mapa da memoria partilhada");
+        exit(1);
+    }
+
+    int statusPointer = shm_unlink(name);
+
+    if(statusPointer == -1){
+        perror("fodeu ao destruir o pointer para a memoria partilhada");
+        exit(1);
+    }
 }
 
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
