@@ -24,7 +24,15 @@ int execute_patient(int patient_id, struct data_container* data, struct communic
 * verificar se data->terminate tem valor 1. Em caso afirmativo, retorna imediatamente da função.
 */
 void patient_receive_admission(struct admission* ad, int patient_id, struct data_container* data, struct communication* comm){
-    // TODO
+    if (data->terminate == 1) {
+        return 0; 
+    }
+    else if(comm->main_patient->buffer->requesting_patient == patient_id){
+        patient_process_admission(ad, patient_id, data);
+    }
+    else{
+        return 0;
+    }
 }
 
 /* Função que valida uma admissão, alterando o seu campo receiving_patient para o patient_id
