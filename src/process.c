@@ -59,7 +59,7 @@ int launch_doctor(int doctor_id, struct data_container* data, struct communicati
 
     if (pid == -1) { /* Houve algum erro */
         perror("launch_doctor");
-        exit(-1);
+        exit(1);
     }
 
     if (pid == 0) { /* Processo filho */
