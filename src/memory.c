@@ -141,16 +141,18 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
 void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
     int out = buffer->ptrs->out;
-    int written = 0;
-
+    int read = 0;
+    //Itera pelo ads contidos no buffer
     while ((out+1) % buffer_size != in){
-        if (buffer->buffer->requesting_patient = patient_id) {
-            
-            written = 1;
+        //Verifica se ad foi pedida pelo paciente
+        if (buffer->buffer[out]->requesting_patient = patient_id) {
+            ad = buffer->buffer[out];
+            read = 1;
         }
         out++;
     }
-    if (written == 0) {
+    //Caso nAo tenha lido uma ad disponIvel
+    if (read == 0) {
         ad->id = -1;
     }
         
@@ -163,7 +165,26 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
 * Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
-    // TODO
+    int i = 0;
+    int read = 0;
+    int position = buffer->ptrs[i];
+    /* Itera pelo buffer, procurando pelas posiCOes vazias
+    *  Verifica se Já escreveu ou se ultrapassou o buffer_size
+    */
+    while (read != 1 || i+1 <= buffer_size) {
+        //Verifica se a position estA livre
+        if (position[i] == 1){
+            ad = buffer->ad[i];
+            read = 1;
+        }
+        i++;
+    }
+
+    if (read == 0) {
+        ad->id = -1;
+    }
+
+    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os rececionistas e os médicos,
@@ -172,5 +193,22 @@ void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buff
 * nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_id, int buffer_size, struct admission* ad){
-    // TODO
+    int in = buffer->ptrs->in;
+    int out = buffer->ptrs->out;
+    int read = 0;
+    //Itera pelo ads contidos no buffer
+    while ((out+1) % buffer_size != in){
+        //Verifica se o doutor foi pedido
+        if (buffer->buffer[out]->requested_doctor = doctor_id) {
+            ad = buffer->buffer[out];
+            read = 1;
+        }
+        out++;
+    }
+    //Caso nAo tenha lido uma ad disponIvel
+    if (read == 0) {
+        ad->id = -1;
+    }
+        
+    return 0;
 }
