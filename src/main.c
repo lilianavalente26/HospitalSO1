@@ -49,7 +49,7 @@ void allocate_dynamic_memory_buffers(struct data_container* data) {
     data->receptionist_stats = allocate_dynamic_memory(size);
     data->doctor_stats = allocate_dynamic_memory(size);
 
-    data->results = allocate_dynamic_memory(size);
+    data->results = allocate_dynamic_memory(MAX_RESULTS);
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
@@ -110,7 +110,35 @@ void launch_processes(struct data_container* data, struct communication* comm) {
 * help - imprime informação sobre os comandos disponiveis
 * end - termina o execução do hOSpital através da função stop_execution
 */
-void user_interaction(struct data_container* data, struct communication* comm);
+void user_interaction(struct data_container* data, struct communication* comm) {
+    char input[5]; 
+    int i = 0;
+    scanf("%s" , input);
+    if(strcmp(input,"info")){
+        read_info(data);
+    }
+    else if(strcmp(input,"help")){
+        printf("Pode introduzir somente as seguintes instrucoes: \n"
+        "ad paciente médico - cria uma nova admissão, através da função create_request\n"
+        "info - estado de uma admissão\n"
+        "help - informacao sobre os comandos disponiveis\n"
+        "end - termina o execução do hOSpital\n ");
+    }
+    else if(strcmp(input,"end")){
+        end_execution(data, comm);
+    }
+    else if(strcmp(input,"ad paciente médico")){
+        create_request(i, data, comm);
+    }
+    else{
+        printf("a palavra introduzida nao e valida.\n" 
+        "Pode introduzir somente as seguintes instrucoes: \n"
+        "ad paciente médico - cria uma nova admissão, através da função create_request\n"
+        "info - estado de uma admissão\n"
+        "help - informacao sobre os comandos disponiveis\n"
+        "end - termina o execução do hOSpital\n ");
+    }
+}
 
 /* MEtodo Auxiliar
 * Verifica se o patient_id E vAlido.
