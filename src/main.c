@@ -103,6 +103,8 @@ void print_status(struct data_container* data) {
         j++;
     }
     printf("%d",data->terminate);
+
+    return 0;
 }
 
 /* Função que termina a execução do programa hOSpital. Deve começar por 
@@ -118,7 +120,20 @@ void end_execution(struct data_container* data, struct communication* comm);
 * incluindo pacientes, rececionistas e médicos. Para tal, pode usar a função 
 * wait_process do process.h.
 */
-void wait_processes(struct data_container* data);
+void wait_processes(struct data_container* data) {
+    //espera pelo pa
+    for (int i = 0; i < data->n_patients; i++) {
+        wait_process(data->patient_pids[i]);
+    }
+    for (int i = 0; i < data->n_receptionists; i++) {
+        wait_process(data->receptionist_pids[i]);
+    }
+    for (int i = 0; i < data->n_doctors; i++) {
+        wait_process(data->doctor_pids[i]);
+    }
+
+    return 0;
+}
 
 /* Função que imprime as estatisticas finais do hOSpital, nomeadamente quantas
 * admissões foram solicitadas por cada paciente, realizadas por cada rececionista
