@@ -1,3 +1,10 @@
+/*
+* Grupo SO-024
+* Afonso Santos - fc59808
+* Madalena Machado - fc59858
+* Liliana Valente - fc59846
+*/
+
 #include <stdio.h>
 #include <memory.h>
 #include <sys/types.h>

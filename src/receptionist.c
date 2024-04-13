@@ -1,3 +1,10 @@
+/*
+* Grupo SO-024
+* Afonso Santos - fc59808
+* Madalena Machado - fc59858
+* Liliana Valente - fc59846
+*/
+
 #include "memory.h"
 #include "main.h"
 #include "receptionist.h"
