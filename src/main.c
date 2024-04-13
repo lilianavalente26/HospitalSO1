@@ -15,7 +15,17 @@
 * médicos. Guarda esta informação nos campos apropriados da
 * estrutura data_container.
 */
-void main_args(int argc, char* argv[], struct data_container* data);
+void main_args(int argc, char* argv[], struct data_container* data) {
+    if (argc != 5) {
+        perror("NUmero de argumentos inválidos");
+        exit(1);
+    }
+    data->max_ads = &argv[0];
+    data->buffers_size = &argv[1];
+    data->n_patients = &argv[2];
+    data->n_receptionists = &argv[3];
+    data->n_doctors = &argv[4];
+}
 
 /* Função que reserva a memória dinâmica necessária para a execução
 * do hOSpital, nomeadamente para os arrays *_pids e *_stats da estrutura 
