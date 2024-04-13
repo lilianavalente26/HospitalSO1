@@ -1,5 +1,13 @@
 #include <stdio.h>
 #include <main.h>
+#include <doctor.h>
+#include <patient.h>
+#include <receptionist.h>
+#include <process.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdio.h>
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de admissões, o tamanho dos buffers de memória partilhada
@@ -28,7 +36,11 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
 * guardando os pids resultantes nos arrays respetivos
 * da estrutura data.
 */
-void launch_processes(struct data_container* data, struct communication* comm);
+void launch_processes(struct data_container* data, struct communication* comm) {
+    launch_patient(data->patient_pids,data,comm);
+    launch_receptionist(data->receptionist_pids,data,comm);
+    launch_doctor(data->doctor_pids,data,comm);
+}
 
 /* Função que faz a interação do utilizador, podendo receber 4 comandos:
 * ad paciente médico - cria uma nova admissão, através da função create_request
@@ -55,7 +67,22 @@ void read_info(struct data_container* data);
 /* Função que imprime o estado do data_container, nomeadamente todos os seus campos.
 * No caso dos arrays, deve-se imprimir no formato [0, 1, 2, ..., N], onde N é o último elemento do array.
 */
-void print_status(struct data_container* data);
+void print_status(struct data_container* data) {
+    printf("%d",data->max_ads);
+    printf("%d",data->buffers_size);
+    printf("%d",data->n_patients);
+    printf("%d",data->n_receptionists);
+    printf("%d",data->n_doctors);
+    //iterar pelos varios elementos das listas
+    printf(,);
+    printf(,);
+    printf(,);
+    printf(,);
+    printf(,);
+    printf(,);
+    printf(,);
+    printf("%d",data->terminate);
+}
 
 /* Função que termina a execução do programa hOSpital. Deve começar por 
 * afetar a flag data->terminate com o valor 1. De seguida, e por esta
@@ -77,7 +104,7 @@ void wait_processes(struct data_container* data);
 * e atendidas por cada médico.
 */
 void write_statistics(struct data_container* data){
-    
+
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente
