@@ -68,19 +68,40 @@ void read_info(struct data_container* data);
 * No caso dos arrays, deve-se imprimir no formato [0, 1, 2, ..., N], onde N é o último elemento do array.
 */
 void print_status(struct data_container* data) {
-    printf("%d",data->max_ads);
-    printf("%d",data->buffers_size);
-    printf("%d",data->n_patients);
-    printf("%d",data->n_receptionists);
-    printf("%d",data->n_doctors);
-    //iterar pelos varios elementos das listas
-    printf(,);
-    printf(,);
-    printf(,);
-    printf(,);
-    printf(,);
-    printf(,);
-    printf(,);
+    printf("max_ads:%d\n",data->max_ads);
+    printf("buffers_size:%d\n",data->buffers_size);
+    printf("n_patient:%d\n",data->n_patients);
+    printf("n_receptionists:%d\n",data->n_receptionists);
+    printf("n_doctors:%d\n",data->n_doctors);
+    printf("\n");
+
+    for (int i = 0; i < data->n_patients; i++) {
+        printf("Patient ids nº%d: %d\n", i+1, data->patient_pids);
+        printf("Patient stats nº%d: %d\n", i+1, data->patient_stats);
+        printf("\n");
+    }
+    for (int i = 0; i < data->n_receptionists; i++) {
+        printf("Receptionist ids nº%d: %d\n",data->receptionist_pids);
+        printf("Receptionist stats nº%d: %d\n",data->receptionist_stats);
+        printf("\n");
+    }
+    for (int i = 0; i < data->n_doctors; i++) {
+        printf("Doctor ids nº%d: %d\n",data->doctor_pids);
+        printf("Doctor stats nº%d: %d\n",data->doctor_stats);
+        printf("\n");
+    }
+    int j = 0;
+    while (data->results[j] != "\0"){
+        printf("Admission id:%d\n", data->results[j]->id);
+        printf("requesting_patient:%d\n", data->results[j]->requesting_patient);
+        printf("requested_doctor:%d\n",data->results[j]->requested_doctor);
+        printf("status:%c\n",data->results[j]->status);
+        printf("receiving_patient:%d\n",data->results[j]->receiving_patient);
+        printf("receiving_receptionist:%d\n",data->results[j]->receiving_receptionist);
+        printf("receiving_doctor:%d\n",data->results[j]->receiving_doctor);
+        printf("\n");
+        j++;
+    }
     printf("%d",data->terminate);
 }
 
