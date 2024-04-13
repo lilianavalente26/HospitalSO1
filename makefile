@@ -1,22 +1,22 @@
 CC = gcc
-SRC_DIRE = src
+CFLAGS = -Wall -Wextra -std=c99
+LDFLAGS = -lm
+SRC_DIR = src
 INCLUDE_DIR = include
 OBJ_DIR = obj
 BIN_DIR = bin
 
-main.o = main.h
-doctor.o = doctor.h
-memory.o = memory.h
-patient.o = patient.h
-process.o = process.h
-receptionist.o = receptionist.h
+SRCS = $(wildcard $(SRC_DIR)/.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o,$(SRCS))
+TARGET = $(BIN_DIR)/HOSPITALSO1
 
-out: $(OBJECTOS)
-$(CC) $(addprefix $(OBJ_dir)/,$(OBJECTOS)) -o bin/out
-%.o: src/%.c $($@)
-$(CC) -I include -o $(OBJ_dir)/$@ -c $<
+$(TARGET): $(OBJS)
+    $(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+    $(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDE_DIR)
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET)
+    rm -f $(OBJ_DIR)/.o $(TARGET)
 
 .PHONY: clean
