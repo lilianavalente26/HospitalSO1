@@ -42,6 +42,19 @@ void* allocate_dynamic_memory(int size){
 */
 void destroy_shared_memory(char* name, void* ptr, int size){
 
+    int statusMap = munmap(ptr, size); 
+
+    if(statusMap == -1){
+        perror("fodeu ao destruir a mapa da memoria partilhada");
+        exit(1);
+    }
+
+    int statusPointer = shm_unlink(name);
+
+    if(statusPointer == -1){
+        perror("fodeu ao destruir o pointer para a memoria partilhada");
+        exit(1);
+    }
 }
 
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
@@ -56,7 +69,7 @@ void deallocate_dynamic_memory(void* ptr){
 * Se não houver nenhuma posição livre, não escreve nada.
 */
 void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
-
+// chamada
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os pacientes
@@ -65,7 +78,7 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
 * Se não houver nenhuma posição livre, não escreve nada.
 */
 void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
-
+// chamada
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os rececionistas
@@ -74,7 +87,7 @@ void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buf
 * Se não houver nenhuma posição livre, não escreve nada.
 */
 void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
-
+//
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre a Main
@@ -83,7 +96,7 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
 * Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, int buffer_size, struct admission* ad){
-
+// chamada
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e rececionistas,
@@ -92,7 +105,7 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
 * Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
-
+// chamada
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os rececionistas e os médicos,
@@ -101,5 +114,5 @@ void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buff
 * nenhuma admissão disponível, afeta ad->id com o valor -1.
 */
 void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_id, int buffer_size, struct admission* ad){
-
+// chamada
 }
