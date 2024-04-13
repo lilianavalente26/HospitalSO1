@@ -19,26 +19,23 @@
 * métodos auxiliares definidos em patient.h.
 */
 int execute_patient(int patient_id, struct data_container* data, struct communication* comm){
-    while (data->terminate == 0){
+    while (*data->terminate == 0){
         if(comm->main_patient->buffer->id!=-1){
-            receptionist_receive_admission(comm->main_patient->buffer,data,comm);
+            patient_receive_admission(comm->main_patient->buffer, patient_id, data, comm);
         }
     }
-    return data->patient_stats; //numero de admissoes pedidas
+    return *data->patient_stats; //numero de admissoes pedidas
 }
 /* Função que lê uma admissão (do buffer de memória partilhada entre a main
 * e os pacientes) que seja direcionada a patient_id. Antes de tentar ler a admissão, deve
 * verificar se data->terminate tem valor 1. Em caso afirmativo, retorna imediatamente da função.
 */
 void patient_receive_admission(struct admission* ad, int patient_id, struct data_container* data, struct communication* comm){
-    if (data->terminate == 1) {
-        return 0; 
+    if (*data->terminate == 1) {
+        return; 
     }
     else if(comm->main_patient->buffer->requesting_patient == patient_id){
         patient_process_admission(ad, patient_id, data);
-    }
-    else{
-        return 0;
     }
 }
 
@@ -55,8 +52,6 @@ void patient_process_admission(struct admission* ad, int patient_id, struct data
 
     //Atualizar a admission no data
     data->results = ad;
-
-    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os

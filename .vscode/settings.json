@@ -3,7 +3,8 @@
         "doctor.h": "c",
         "types.h": "c",
         "receptionist.h": "c",
-        "patient.h": "c"
+        "patient.h": "c",
+        "stdio.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -8,9 +8,13 @@
 #include <stdio.h>
 #include <memory.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
@@ -19,7 +23,7 @@
 */
 void* create_shared_memory(char* name, int size){
     int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
-    int ftruncate(shm, size); 
+    int ftruncate(int shm, off_t size); 
     if(shm == -1){
         perror ("create_shared_memory_1");
         exit(1);
@@ -43,14 +47,14 @@ void* create_shared_memory(char* name, int size){
 */
 void* allocate_dynamic_memory(int size){
     //aloca memOria dinAmica com size
-    int ptr* = malloc(size);
+    int *ptr = malloc(size);
     //Houve erro a alocar
-    if (ptr = NULL){
+    if (ptr == NULL){
         perror("allocate_dynamic_memory");
         exit(1);
     }
     //preenche essa zona de memória com o valor 0
-    &ptr = 0;
+    *ptr = 0;
     //retorna o apontador para a mesma
     return ptr;
 }
@@ -89,11 +93,9 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
     int out = buffer->ptrs->out;
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
-        buffer->buffer[in] = ad;
+        buffer->buffer[in] = *ad;
         buffer->ptrs->in++;
     }
-
-    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os pacientes
@@ -104,21 +106,18 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
 void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
     int i = 0;
     int written = 0;
-    int position = buffer->ptrs[i];
     /* Itera pelo buffer, procurando pelas posiCOes vazias
     *  Verifica se Já escreveu ou se ultrapassou o buffer_size
     */
     while (written != 1 || i+1 <= buffer_size) {
         //Verifica se a position estA livre
-        if (position[i] == 0){
-            buffer->ad[i] = ad;
-            position[i] = 1;
+        if (buffer->ptrs[i] == 0){
+            buffer->buffer[i] = *ad;
+            buffer->ptrs[i] = 1;
             written = 1;
         }
         i++;
     }
-
-    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre os rececionistas
@@ -131,11 +130,9 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
     int out = buffer->ptrs->out;
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
-        buffer->buffer[in] = ad;
+        buffer->buffer[in] = *ad;
         buffer->ptrs->in++;
     }
-
-    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre a Main
@@ -151,8 +148,8 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
     //Itera pelo ads contidos no buffer
     while ((out+1) % buffer_size != in){
         //Verifica se ad foi pedida pelo paciente
-        if (buffer->buffer[out]->requesting_patient = patient_id) {
-            ad = buffer->buffer[out];
+        if (buffer->buffer[out].requesting_patient == patient_id) {
+            *ad = buffer->buffer[out];
             read = 1;
         }
         out++;
@@ -161,8 +158,6 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
     if (read == 0) {
         ad->id = -1;
     }
-        
-    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e rececionistas,
@@ -173,14 +168,13 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
 void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
     int i = 0;
     int read = 0;
-    int position = buffer->ptrs[i];
     /* Itera pelo buffer, procurando pelas posiCOes vazias
     *  Verifica se Já escreveu ou se ultrapassou o buffer_size
     */
     while (read != 1 || i+1 <= buffer_size) {
         //Verifica se a position estA livre
-        if (position[i] == 1){
-            ad = buffer->ad[i];
+        if (buffer->ptrs[i] == 1){
+            *ad = buffer->buffer[i];
             read = 1;
         }
         i++;
@@ -189,8 +183,6 @@ void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buff
     if (read == 0) {
         ad->id = -1;
     }
-
-    return 0;
 }
 
 /* Função que lê uma admissão do buffer de memória partilhada entre os rececionistas e os médicos,
@@ -205,8 +197,8 @@ void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_
     //Itera pelo ads contidos no buffer
     while ((out+1) % buffer_size != in){
         //Verifica se o doutor foi pedido
-        if (buffer->buffer[out]->requested_doctor = doctor_id) {
-            ad = buffer->buffer[out];
+        if (buffer->buffer[out].requested_doctor == doctor_id) {
+            *ad = buffer->buffer[out];
             read = 1;
         }
         out++;
@@ -215,6 +207,4 @@ void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_
     if (read == 0) {
         ad->id = -1;
     }
-        
-    return 0;
 }

@@ -8,6 +8,8 @@
 #include "memory.h"
 #include "main.h"
 #include "receptionist.h"
+#include <stdlib.h>
+#include <time.h>
 
 /* Função principal de um Rececionista. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma admissão dos pacientes e se a mesma tiver id 
@@ -24,22 +26,24 @@ int execute_receptionist(int receptionist_id, struct data_container* data, struc
             receptionist_receive_admission(comm->patient_receptionist->buffer,data,comm);
         }
     }
-    return data->receptionist_stats; //numero de admissoes realizadas
+    return *data->receptionist_stats; //numero de admissoes realizadas
 }
 /* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e os rececionistas.
 * Antes de tentar ler a admissão, deve verificar se data->terminate tem valor 1.
 * Em caso afirmativo, retorna imediatamente da função.
 */
 void receptionist_receive_admission(struct admission* ad, struct data_container* data, struct communication* comm){
-    if (data->terminate == 1) {
+    //Caso data->terminate for 1 
+    if (*data->terminate == 1) {
         return;
-    }
-    else if (data->receptionist_pids == receptionist_id) {
-        ad->receiving_receptionist = receptionist_id;
+    } 
+    //Escolhe um receptionist aleatOrio para receber a admission
+    else {
+        srand(time(NULL));
+        int rand_index = rand() % data->n_receptionists;
+        int receptionist_id = data->receptionist_pids[rand_index];
         
-        ad->status = 'R';
-
-        data->receptionist_stats[receptionist_id]++;
+        receptionist_process_admission(ad, receptionist_id, data);
     }
 }
 
@@ -56,8 +60,6 @@ void receptionist_process_admission(struct admission* ad, int receptionist_id, s
 
     //Atualizar a admission no data
     data->results = ad;
-
-    return 0;
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre

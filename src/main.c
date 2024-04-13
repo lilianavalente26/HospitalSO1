@@ -11,10 +11,12 @@
 #include <patient.h>
 #include <receptionist.h>
 #include <process.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de admissões, o tamanho dos buffers de memória partilhada
@@ -23,15 +25,15 @@
 * estrutura data_container.
 */
 void main_args(int argc, char* argv[], struct data_container* data) {
-    if (argc != 5) {
+    if (argc != 6) {
         perror("NUmero de argumentos inválidos");
         exit(1);
     }
-    data->max_ads = &argv[0];
-    data->buffers_size = &argv[1];
-    data->n_patients = &argv[2];
-    data->n_receptionists = &argv[3];
-    data->n_doctors = &argv[4];
+    data->max_ads = atoi(argv[1]);
+    data->buffers_size = atoi(argv[2]);
+    data->n_patients = atoi(argv[3]);
+    data->n_receptionists = atoi(argv[4]);
+    data->n_doctors = atoi(argv[5]);
 }
 
 /* Função que reserva a memória dinâmica necessária para a execução
@@ -112,7 +114,7 @@ void launch_processes(struct data_container* data, struct communication* comm) {
 */
 void user_interaction(struct data_container* data, struct communication* comm) {
     char input[5]; 
-    int i = 0;
+    int *i = 0;
     scanf("%s" , input);
     if(strcmp(input,"info")){
         read_info(data);
@@ -152,7 +154,7 @@ int IDCheckerPatient(int patient_id, struct data_container* data) {
     }
     else {
         printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerPatient(patient_id);
+        return IDCheckerPatient(patient_id, data);
     }
 }
 
@@ -161,14 +163,14 @@ int IDCheckerPatient(int patient_id, struct data_container* data) {
 * Se vAlido, retorna o recepcionist_id.
 * Caso contrArio, pede um novo recepcionist_id.
 */
-int IDCheckerRecepcionist(int recepcionist_id, struct data_container* data) {
-    scanf("%d", &recepcionist_id);
-    if (recepcionist_id > 0 && recepcionist_id <= data->n_receptionists) {
-        return recepcionist_id;
+int IDCheckerReceptionist(int receptionist_id, struct data_container* data) {
+    scanf("%d", &receptionist_id);
+    if (receptionist_id > 0 && receptionist_id <= data->n_receptionists) {
+        return receptionist_id;
     }
     else {
         printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerRecepcionist(recepcionist_id);
+        return IDCheckerReceptionist(receptionist_id, data);
     }
 }
 
@@ -184,7 +186,7 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
     }
     else {
         printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerDoctor(doctor_id);
+        return IDCheckerDoctor(doctor_id, data);
     }
 }
 
@@ -194,35 +196,35 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
 * admissão e incrementa o contador de admissões ad_counter.
 */
 void create_request(int* ad_counter, struct data_container* data, struct communication* comm) {
-    int requesting_patient, requested_doctor, receiving_patient,
-        receiving_receptionist, receiving_doctor;
+    int requesting_patient = 0, requested_doctor = 0, receiving_patient = 0,
+        receiving_receptionist = 0, receiving_doctor = 0;
 
     struct admission newAd; //cria uma nova admissao
-    newAd->id = ad_counter;
-    newAd->status = 'N';
+    newAd.id = *ad_counter;
+    newAd.status = 'N';
 
     printf("Insira id do paciente: ");
-    newAd->requesting_patient = IDCheckerPatient(requesting_patient);
+    newAd.requesting_patient = IDCheckerPatient(requesting_patient, data);
     printf("\n");
 
     printf("Insira id do medico pretendido: ");
-    newAd->requested_doctor = IDCheckerDoctor(requested_doctor);
+    newAd.requested_doctor = IDCheckerDoctor(requested_doctor, data);
     printf("\n");
 
     printf("Insira id do paciente que recebeu a admissao: ");
-    newAd->receiving_patient = IDCheckerPatient(receiving_patient);
+    newAd.receiving_patient = IDCheckerPatient(receiving_patient, data);
     printf("\n");
 
     printf("Insira id do rececionista que realizou a admissao: ");
-    newAd->receiving_receptionist = IDCheckerReceptionist(receiving_receptionist);
+    newAd.receiving_receptionist = IDCheckerReceptionist(receiving_receptionist, data);
     printf("\n");
 
     printf("Insira id do medico que realizou a consulta: ");
-    newAd->receiving_doctor = IDCheckerDoctor(receiving_doctor);
+    newAd.receiving_doctor = IDCheckerDoctor(receiving_doctor, data);
     printf("\n");
 
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: %d\n", ad_counter);
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
+    printf("O id da nova admissao eh: %d\n", *ad_counter);
     ad_counter++;
 }
 
@@ -263,12 +265,10 @@ void print_patient_ids(struct data_container* data) {
             printf("%d,", data->patient_pids[i]);
         }
         else{
-            printf("%d]", data->patient_pids[i])
+            printf("%d]", data->patient_pids[i]);
         }
     }
     printf("\n");
-
-    return 0;
 }
 
 /* MEtodo Auxiliar
@@ -284,12 +284,10 @@ void print_receptionist_ids(struct data_container* data){
             printf("%d,", data->receptionist_pids[i]);
         }
         else{
-            printf("%d]", data->receptionist_pids[i])
+            printf("%d]", data->receptionist_pids[i]);
         }
     }
     printf("\n");
-
-    return 0;
 }
 
 /* MEtodo Auxiliar
@@ -305,12 +303,10 @@ void print_doctor_ids(struct data_container* data) {
             printf("%d,", data->doctor_pids[i]);
         }
         else{
-            printf("%d]", data->doctor_pids[i])
+            printf("%d]", data->doctor_pids[i]);
         }
     }
     printf("\n");
-
-    return 0;
 }
 
 /* MEtodo Auxiliar
@@ -319,21 +315,19 @@ void print_doctor_ids(struct data_container* data) {
 void print_data_results(struct data_container* data) {
     printf("Admission results:");
     int j = 0;
-    while (data->results[j] != "\0"){
+    while (data->results[j].id != -1){
         if (j == 0) {
-            printf("[%d,", data->results[j]->id);
+            printf("[%d,", data->results[j].id);
         }
-        else if (data->results[j+1] == "\0"){
-            printf("%d,", data->results[j]->id);
+        else if (data->results[j+1].id == -1){
+            printf("%d,", data->results[j].id);
         }
         else{
-            printf("%d]", data->results[j]->id)
+            printf("%d]", data->results[j].id);
         }
         j++;
     }
     printf("\n");
-
-    return 0;
 }
 
 /* Função que imprime o estado do data_container, nomeadamente todos os seus campos.
@@ -352,9 +346,7 @@ void print_status(struct data_container* data) {
     print_doctor_ids(data);
     print_data_results(data);
 
-    printf("%d",data->terminate);
-
-    return 0;
+    printf("%d", *data->terminate);
 }
 
 /* Função que termina a execução do programa hOSpital. Deve começar por 
@@ -365,9 +357,9 @@ void print_status(struct data_container* data) {
 * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
 void end_execution(struct data_container* data, struct communication* comm){
-    data->terminate = 1;
+    *data->terminate = 1;
     wait_processes(data);
-    write_statistic(data);
+    write_statistics(data);
     destroy_memory_buffers(data,comm);
 }
 
@@ -388,8 +380,6 @@ void wait_processes(struct data_container* data) {
     for (int i = 0; i < data->n_doctors; i++) {
         wait_process(data->doctor_pids[i]);
     }
-
-    return 0;
 }
 
 /* Função que imprime as estatisticas finais do hOSpital, nomeadamente quantas
@@ -398,7 +388,7 @@ void wait_processes(struct data_container* data) {
 */
 void write_statistics(struct data_container* data){
     //verifica-se a flag terminate esta a 1, o que indica que o programa ja terminou
-    if(data->terminate == 1){
+    if(*data->terminate == 1){
         for (int i = 0; i < data->n_patients; i++)
         {
             printf("O numero de admissoes solicitadas por cada paciente corresponte a %d\n",data->patient_stats[i]);
