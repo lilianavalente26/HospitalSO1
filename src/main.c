@@ -105,20 +105,51 @@ void launch_processes(struct data_container* data, struct communication* comm) {
 */
 void user_interaction(struct data_container* data, struct communication* comm);
 
-int
-
 /* MEtodo Auxiliar
-* Verifica se o id E vAlido
-* Se vAlido, returna o id. Caso contrArio, pede um novo id
+* Verifica se o patient_id E vAlido.
+* Se vAlido, retorna o patient_id.
+* Caso contrArio, pede um novo patient_id.
 */
-int IDChecker(int id) {
-    scanf("&d", id);
-    if (validArgument(id) == 1) {
-        return id;
+int IDCheckerPatient(int patient_id, struct data_container* data) {
+    scanf("%d", &patient_id);
+    if (patient_id > 0 && patient_id <= data->n_patients) {
+        return patient_id;
     }
     else {
         printf("Id invAlido, insira um id vAlido:");
-        return IDChecker(id);
+        return IDCheckerPatient(patient_id);
+    }
+}
+
+/* MEtodo Auxiliar
+* Verifica se o recepcionist_id E vAlido.
+* Se vAlido, retorna o recepcionist_id.
+* Caso contrArio, pede um novo recepcionist_id.
+*/
+int IDCheckerRecepcionist(int recepcionist_id, struct data_container* data) {
+    scanf("%d", &recepcionist_id);
+    if (recepcionist_id > 0 && recepcionist_id <= data->n_receptionists) {
+        return recepcionist_id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDCheckerRecepcionist(recepcionist_id);
+    }
+}
+
+/* MEtodo Auxiliar
+* Verifica se o doctor_id E vAlido.
+* Se vAlido, retorna o doctor_id.
+* Caso contrArio, pede um novo doctor_id.
+*/
+int IDCheckerDoctor(int doctor_id, struct data_container* data) {
+    scanf("%d", &doctor_id);
+    if (doctor_id > 0 && doctor_id <= data->n_doctors) {
+        return doctor_id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDCheckerDoctor(doctor_id);
     }
 }
 
@@ -136,30 +167,30 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd->status = 'N';
 
     printf("Insira id do paciente: ");
-    newAd->requesting_patient = IDChecker(requesting_patient);
+    newAd->requesting_patient = IDCheckerPatient(requesting_patient);
     printf("\n");
 
     printf("Insira id do medico pretendido: ");
-    newAd->requested_doctor = IDChecker(requested_doctor);
+    newAd->requested_doctor = IDCheckerDoctor(requested_doctor);
     printf("\n");
 
     printf("Insira id do paciente que recebeu a admissao: ");
-    newAd->receiving_patient = IDChecker(receiving_patient);
+    newAd->receiving_patient = IDCheckerPatient(receiving_patient);
     printf("\n");
 
     printf("Insira id do rececionista que realizou a admissao: ");
-    newAd->receiving_receptionist = IDChecker(receiving_receptionist);
+    newAd->receiving_receptionist = IDCheckerReceptionist(receiving_receptionist);
     printf("\n");
 
     printf("Insira id do medico que realizou a consulta: ");
-    newAd->receiving_doctor = IDChecker(receiving_doctor);
+    newAd->receiving_doctor = IDCheckerDoctor(receiving_doctor);
     printf("\n");
 
     write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: &d", ad_counter);
+    printf("O id da nova admissao eh: %d\n", ad_counter);
     ad_counter++;
 }
-}
+
 /* Função que lê um id de admissão do utilizador e verifica se a mesma é valida.
 * Em caso afirmativo imprime a informação da mesma, nomeadamente o seu estado, o 
 * id do paciente que fez o pedido, o id do médico requisitado, e os ids do paciente,
