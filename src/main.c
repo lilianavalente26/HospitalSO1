@@ -90,7 +90,7 @@ void launch_processes(struct data_container* data, struct communication* comm){
 */
 void user_interaction(struct data_container* data, struct communication* comm){
     char input[5]; 
-    int i = 1;
+    int i = 0;
     scanf("%s" , input);
     if(strcmp(input,"info")){
         read_info(data);
@@ -107,7 +107,6 @@ void user_interaction(struct data_container* data, struct communication* comm){
     }
     else if(strcmp(input,"ad paciente médico")){
         create_request(i, data, comm);
-        i++;
     }
     else{
         printf("a palavra introduzida nao e valida.\n" 
