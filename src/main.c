@@ -102,7 +102,25 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
 * id do paciente que fez o pedido, o id do médico requisitado, e os ids do paciente,
 * rececionista, e médico que a receberam e processaram.
 */
-void read_info(struct data_container* data);
+void read_info(struct data_container* data){
+    int admission_id;
+    printf("Qual o id de admissao a consultar? ");
+    scanf("%d", &admission_id);
+
+    if (admission_id >= 0 && admission_id < data->max_ads) {
+        struct admission* ad = &(data->results[admission_id]);
+        printf("Informacoes da admissao %d:\n", admission_id);
+        printf("Estado da admissao: %c\n", ad->status);
+        printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
+        printf("id do medico requisitado: %d\n", ad->requested_doctor);
+        printf("id do paciente que recebeu a admissao: %d\n", ad->receiving_patient);
+        printf("id do recepcionista que realizou a admissao: %d\n", ad->receiving_receptionist);
+        printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
+    } else {
+        printf("id de admissao invalido!\n");
+    }
+}
+
 
 /* Função que imprime o estado do data_container, nomeadamente todos os seus campos.
 * No caso dos arrays, deve-se imprimir no formato [0, 1, 2, ..., N], onde N é o último elemento do array.
@@ -110,21 +128,26 @@ void read_info(struct data_container* data);
 void print_status(struct data_container* data);
 
 /* Função que termina a execução do programa hOSpital. Deve começar por 
-* afetar a flag data->terminate com o valor 1. De seguida, e por esta
-* ordem, deve esperar que os processos filho terminem, deve escrever as
-* estatisticas finais do programa, e por fim libertar
+* afetar a flag data->terminate com o valor 1. 
+* De seguida, e por esta ordem, deve esperar que os processos filho terminem, 
+* deve escrever as estatisticas finais do programa, e por fim libertar
 * as zonas de memória partilhada e dinâmica previamente 
 * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
 void end_execution(struct data_container* data, struct communication* comm){
-
+    data->terminate = 1;
+    wait_processes(data);
+    write_statistic(data);
+    destroy_memory_buffers(data,comm);
 }
 
 /* Função que espera que todos os processos previamente iniciados terminem,
 * incluindo pacientes, rececionistas e médicos. Para tal, pode usar a função 
 * wait_process do process.h.
 */
-void wait_processes(struct data_container* data);
+void wait_processes(struct data_container* data){
+    
+}
 
 /* Função que imprime as estatisticas finais do hOSpital, nomeadamente quantas
 * admissões foram solicitadas por cada paciente, realizadas por cada rececionista
