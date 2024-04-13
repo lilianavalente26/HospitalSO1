@@ -105,13 +105,61 @@ void launch_processes(struct data_container* data, struct communication* comm) {
 */
 void user_interaction(struct data_container* data, struct communication* comm);
 
+int
+
+/* MEtodo Auxiliar
+* Verifica se o id E vAlido
+* Se vAlido, returna o id. Caso contrArio, pede um novo id
+*/
+int IDChecker(int id) {
+    scanf("&d", id);
+    if (validArgument(id) == 1) {
+        return id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDChecker(id);
+    }
+}
+
 /* Cria uma nova admissão identificada pelo valor atual de ad_counter e com os 
 * dados introduzidos pelo utilizador na linha de comandos, escrevendo a mesma 
 * no buffer de memória partilhada entre a main e os pacientes. Imprime o id da 
 * admissão e incrementa o contador de admissões ad_counter.
 */
-void create_request(int* ad_counter, struct data_container* data, struct communication* comm);
+void create_request(int* ad_counter, struct data_container* data, struct communication* comm) {
+    int requesting_patient, requested_doctor, receiving_patient,
+        receiving_receptionist, receiving_doctor;
 
+    struct admission newAd; //cria uma nova admissao
+    newAd->id = ad_counter;
+    newAd->status = 'N';
+
+    printf("Insira id do paciente: ");
+    newAd->requesting_patient = IDChecker(requesting_patient);
+    printf("\n");
+
+    printf("Insira id do medico pretendido: ");
+    newAd->requested_doctor = IDChecker(requested_doctor);
+    printf("\n");
+
+    printf("Insira id do paciente que recebeu a admissao: ");
+    newAd->receiving_patient = IDChecker(receiving_patient);
+    printf("\n");
+
+    printf("Insira id do rececionista que realizou a admissao: ");
+    newAd->receiving_receptionist = IDChecker(receiving_receptionist);
+    printf("\n");
+
+    printf("Insira id do medico que realizou a consulta: ");
+    newAd->receiving_doctor = IDChecker(receiving_doctor);
+    printf("\n");
+
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
+    printf("O id da nova admissao eh: &d", ad_counter);
+    ad_counter++;
+}
+}
 /* Função que lê um id de admissão do utilizador e verifica se a mesma é valida.
 * Em caso afirmativo imprime a informação da mesma, nomeadamente o seu estado, o 
 * id do paciente que fez o pedido, o id do médico requisitado, e os ids do paciente,
