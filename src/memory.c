@@ -14,19 +14,18 @@ void* create_shared_memory(char* name, int size){
     int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
     int ftruncate(shm, size); 
     if(shm == -1){
-        perror ("fodeu no bestie create_shared_memory");
+        perror ("create_shared_memory_1");
         exit(1);
     }
     // com a notacao NULL e o SO que determina automaticamente o endereco
     // inicial da projecao
     void* ptrSharedMemory = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
     if(ptrSharedMemory == MAP_FAILED){
-        perror("fodeu a criar o pointer para a shared memory");
+        perror("create_shared_memory_2");
         exit(1);
     }
 
     memset(ptrSharedMemory, 0, size);
-
 
     return ptrSharedMemory;
 }
@@ -40,7 +39,7 @@ void* allocate_dynamic_memory(int size){
     int ptr* = malloc(size);
     //Houve erro a alocar
     if (ptr = NULL){
-        perror("fodeu");
+        perror("allocate_dynamic_memory");
         exit(1);
     }
     //preenche essa zona de memória com o valor 0
@@ -55,14 +54,14 @@ void destroy_shared_memory(char* name, void* ptr, int size){
     int statusMap = munmap(ptr, size); 
 
     if(statusMap == -1){
-        perror("fodeu ao destruir a mapa da memoria partilhada");
+        perror("destroy_shared_memory_1");
         exit(1);
     }
 
     int statusPointer = shm_unlink(name);
 
     if(statusPointer == -1){
-        perror("fodeu ao destruir o pointer para a memoria partilhada");
+        perror("destroy_shared_memory_2");
         exit(1);
     }
 }

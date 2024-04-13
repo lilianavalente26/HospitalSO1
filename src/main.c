@@ -21,7 +21,19 @@ void main_args(int argc, char* argv[], struct data_container* data);
 * do hOSpital, nomeadamente para os arrays *_pids e *_stats da estrutura 
 * data_container. Para tal, pode ser usada a função allocate_dynamic_memory.
 */
-void allocate_dynamic_memory_buffers(struct data_container* data);
+void allocate_dynamic_memory_buffers(struct data_container* data) {
+    int size = data->buffers_size;
+
+    data->patient_pids = allocate_dynamic_memory(size);
+    data->receptionist_pids = allocate_dynamic_memory(size);
+    data->doctor_pids = allocate_dynamic_memory(size);
+
+    data->patient_stats = allocate_dynamic_memory(size);
+    data->receptionist_stats = allocate_dynamic_memory(size);
+    data->doctor_stats = allocate_dynamic_memory(size);
+
+    data->results = allocate_dynamic_memory(size);
+}
 
 /* Função que reserva a memória partilhada necessária para a execução do
 * hOSpital. É necessário reservar memória partilhada para todos os buffers da
@@ -29,7 +41,31 @@ void allocate_dynamic_memory_buffers(struct data_container* data);
 * pointers, assim como para o array data->results e variável data->terminate.
 * Para tal, pode ser usada a função create_shared_memory.
 */
-void create_shared_memory_buffers(struct data_container* data, struct communication* comm);
+void create_shared_memory_buffers(struct data_container* data, struct communication* comm){
+    // reserva SHM para pacientes
+    comm->main_patient->ptrs =(struct pointers*)create_shared_memory(STR_SHM_MAIN_PATIENT_PTR, sizeof(struct pointers));
+    comm->main_patient->buffer =(struct admission*)create_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, data->buffers_size * sizeof(struct admission));
+
+    // reserva SHM para pacientes-recepcionistas
+    comm->patient_receptionist->buffer =(struct admission*)create_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, data->buffers_size * sizeof(struct admission));
+    comm->patient_receptionist->ptrs =(int*)create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->n_patients * sizeof(int));
+
+    // reserva SHM para recepcionistas-doutores
+    comm->receptionist_doctor->buffer =(struct admission*)create_shared_memory(STR_SHM_RECEPT_DOCTOR_BUFFER, data->buffers_size * sizeof(struct admission));
+    comm->receptionist_doctor->ptrs =(struct pointers*)create_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, sizeof(struct pointers));
+
+    // sizeOf(int) é o espaço na memória em bytes ocupado por um número inteiro
+    // reserva SHM para os stats
+    data->receptionist_stats = (int*)create_shared_memory(STR_SHM_RECEPT_STATS, data->n_receptionists * sizeof(int));
+    data->doctor_stats = (int*)create_shared_memory(STR_SHM_DOCTOR_STATS, data->n_doctors * sizeof(int));
+
+    // reserva SHM para os diagnosticos
+    data->results = (struct admission*)create_shared_memory(STR_SHM_RESULTS, MAX_RESULTS * sizeof(struct admission));
+
+    // reserva SHM para terminate
+    data->terminate = (int*)create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
+    *data->terminate = 0;
+}
 
 /* Função que inicia os processos dos pacientes, rececionistas e
 * médicos. Para tal, pode usar as funções launch_*,
@@ -37,9 +73,18 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
 * da estrutura data.
 */
 void launch_processes(struct data_container* data, struct communication* comm) {
-    launch_patient(data->patient_pids,data,comm);
-    launch_receptionist(data->receptionist_pids,data,comm);
-    launch_doctor(data->doctor_pids,data,comm);
+    //DA launch a cada pacient
+    for (int i = 0; i < data->n_patients; i++){
+        launch_patient(data->patient_pids[i],data,comm);
+    }
+    //DA launch a cada recepcionist
+    for (int i = 0; i < data->n_receptionists; i++) {
+        launch_receptionist(data->receptionist_pids[i],data,comm);
+    }
+    //DA launch a cada doctor
+    for (int i = 0; i < data->n_doctors; i++) {
+        launch_doctor(data->doctor_pids[i],data,comm);
+    }
 }
 
 /* Função que faz a interação do utilizador, podendo receber 4 comandos:
@@ -206,13 +251,31 @@ void wait_processes(struct data_container* data) {
 * e atendidas por cada médico.
 */
 void write_statistics(struct data_container* data){
+    //verifica-se a flag terminate esta a 1, o que indica que o programa ja terminou
+    if(data->terminate == 1){
+        for (int i = 0; i < data->n_patients; i++)
+        {
+            printf("O numero de admissoes solicitadas por cada paciente corresponte a %d\n",data->patient_stats[i]);
+        }
+        for (int i = 0; i < data->n_receptionists; i++)
+        {
+            printf("O numero de admissoes realizadas por cada rececionista corresponte a %d\n",data->receptionist_stats[i]);
+        }
+        for (int i = 0; i < data->n_receptionists; i++)
+        {
+            printf("O numero de admissoes atendidas por cada medico corresponte a %d\n",data->doctor_stats[i]);
+        }
+    }
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente
 * reservados na estrutura data.
 */
-void destroy_memory_buffers(struct data_container* data, struct communication* comm) {
-
+void destroy_memory_buffers(struct data_container* data, struct communication* comm){
+    free(comm->main_patient);
+    free(comm->patient_receptionist);
+    free(comm->receptionist_doctor);
+    free(data);
 }
 
 int main(int argc, char *argv[]) {
