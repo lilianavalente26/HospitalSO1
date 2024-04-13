@@ -64,6 +64,92 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
 */
 void read_info(struct data_container* data);
 
+/* MEtodo Auxiliar
+*Imprime os patient_ids contidos no data
+*/
+void print_patient_ids(struct data_container* data) {
+    printf("Patient ids:");
+    for (int i = 0; i < data->n_patients; i++){
+        if (i == 0) {
+            printf("[%d,", data->patient_pids[i]);
+        }
+        else if (i+1 <= data->n_patients){
+            printf("%d,", data->patient_pids[i]);
+        }
+        else{
+            printf("%d]", data->patient_pids[i])
+        }
+    }
+    printf("\n");
+
+    return 0;
+}
+
+/* MEtodo Auxiliar
+*Imprime os receptionist_ids contidos no data
+*/
+void print_receptionist_ids(struct data_container* data){
+    printf("Receptionist ids:");
+    for (int i = 0; i < data->n_receptionists; i++){
+        if (i == 0) {
+            printf("[%d,", data->receptionist_pids[i]);
+        }
+        else if (i+1 <= data->n_receptionists){
+            printf("%d,", data->receptionist_pids[i]);
+        }
+        else{
+            printf("%d]", data->receptionist_pids[i])
+        }
+    }
+    printf("\n");
+
+    return 0;
+}
+
+/* MEtodo Auxiliar
+*Imprime os doctor_ids contidos no data
+*/
+void print_doctor_ids(struct data_container* data) {
+    printf("Doctor ids:");
+    for (int i = 0; i < data->n_doctors; i++){
+        if (i == 0) {
+            printf("[%d,", data->doctor_pids[i]);
+        }
+        else if (i+1 <= data->n_doctors){
+            printf("%d,", data->doctor_pids[i]);
+        }
+        else{
+            printf("%d]", data->doctor_pids[i])
+        }
+    }
+    printf("\n");
+
+    return 0;
+}
+
+/* MEtodo Auxiliar
+*Imprime os results contidos no data
+*/
+void print_data_results(struct data_container* data) {
+    printf("Admission results:");
+    int j = 0;
+    while (data->results[j] != "\0"){
+        if (j == 0) {
+            printf("[%d,", data->results[j]->id);
+        }
+        else if (data->results[j+1] == "\0"){
+            printf("%d,", data->results[j]->id);
+        }
+        else{
+            printf("%d]", data->results[j]->id)
+        }
+        j++;
+    }
+    printf("\n");
+
+    return 0;
+}
+
 /* Função que imprime o estado do data_container, nomeadamente todos os seus campos.
 * No caso dos arrays, deve-se imprimir no formato [0, 1, 2, ..., N], onde N é o último elemento do array.
 */
@@ -75,33 +161,11 @@ void print_status(struct data_container* data) {
     printf("n_doctors:%d\n",data->n_doctors);
     printf("\n");
 
-    for (int i = 0; i < data->n_patients; i++) {
-        printf("Patient ids nº%d: %d\n", i+1, data->patient_pids);
-        printf("Patient stats nº%d: %d\n", i+1, data->patient_stats);
-        printf("\n");
-    }
-    for (int i = 0; i < data->n_receptionists; i++) {
-        printf("Receptionist ids nº%d: %d\n",data->receptionist_pids);
-        printf("Receptionist stats nº%d: %d\n",data->receptionist_stats);
-        printf("\n");
-    }
-    for (int i = 0; i < data->n_doctors; i++) {
-        printf("Doctor ids nº%d: %d\n",data->doctor_pids);
-        printf("Doctor stats nº%d: %d\n",data->doctor_stats);
-        printf("\n");
-    }
-    int j = 0;
-    while (data->results[j] != "\0"){
-        printf("Admission id:%d\n", data->results[j]->id);
-        printf("requesting_patient:%d\n", data->results[j]->requesting_patient);
-        printf("requested_doctor:%d\n",data->results[j]->requested_doctor);
-        printf("status:%c\n",data->results[j]->status);
-        printf("receiving_patient:%d\n",data->results[j]->receiving_patient);
-        printf("receiving_receptionist:%d\n",data->results[j]->receiving_receptionist);
-        printf("receiving_doctor:%d\n",data->results[j]->receiving_doctor);
-        printf("\n");
-        j++;
-    }
+    print_patient_ids(data);
+    print_receptionist_ids(data);
+    print_doctor_ids(data);
+    print_data_results(data);
+
     printf("%d",data->terminate);
 
     return 0;
@@ -121,13 +185,15 @@ void end_execution(struct data_container* data, struct communication* comm);
 * wait_process do process.h.
 */
 void wait_processes(struct data_container* data) {
-    //espera pelo pa
+    //espera pelo pacients
     for (int i = 0; i < data->n_patients; i++) {
         wait_process(data->patient_pids[i]);
     }
+    //espera pelo recepcionists
     for (int i = 0; i < data->n_receptionists; i++) {
         wait_process(data->receptionist_pids[i]);
     }
+    //espera pelo doctors
     for (int i = 0; i < data->n_doctors; i++) {
         wait_process(data->doctor_pids[i]);
     }
@@ -140,7 +206,6 @@ void wait_processes(struct data_container* data) {
 * e atendidas por cada médico.
 */
 void write_statistics(struct data_container* data){
-
 }
 
 /* Função que liberta todos os buffers de memória dinâmica e partilhada previamente
