@@ -6,14 +6,13 @@
 */
 
 #include <stdio.h>
-#include <memory.h>
+#include "memory.h"
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
