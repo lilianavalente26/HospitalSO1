@@ -107,7 +107,24 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
 * id do paciente que fez o pedido, o id do médico requisitado, e os ids do paciente,
 * rececionista, e médico que a receberam e processaram.
 */
-void read_info(struct data_container* data);
+void read_info(struct data_container* data){
+    int admission_id;
+    printf("Qual o id de admissao a consultar? ");
+    scanf("%d", &admission_id);
+
+    if (admission_id >= 0 && admission_id < data->max_ads) {
+        struct admission* ad = &(data->results[admission_id]);
+        printf("Informacoes da admissao %d:\n", admission_id);
+        printf("Estado da admissao: %c\n", ad->status);
+        printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
+        printf("id do medico requisitado: %d\n", ad->requested_doctor);
+        printf("id do paciente que recebeu a admissao: %d\n", ad->receiving_patient);
+        printf("id do recepcionista que realizou a admissao: %d\n", ad->receiving_receptionist);
+        printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
+    } else {
+        printf("id de admissao invalido!\n");
+    }
+}
 
 /* MEtodo Auxiliar
 *Imprime os patient_ids contidos no data
@@ -223,7 +240,12 @@ void print_status(struct data_container* data) {
 * as zonas de memória partilhada e dinâmica previamente 
 * reservadas. Para tal, pode usar as outras funções auxiliares do main.h.
 */
-void end_execution(struct data_container* data, struct communication* comm);
+void end_execution(struct data_container* data, struct communication* comm){
+    data->terminate = 1;
+    wait_processes(data);
+    write_statistic(data);
+    destroy_memory_buffers(data,comm);
+}
 
 /* Função que espera que todos os processos previamente iniciados terminem,
 * incluindo pacientes, rececionistas e médicos. Para tal, pode usar a função 
