@@ -9,6 +9,8 @@
 #include "../include/main.h"
 #include "../include/process.h"
 #include "../include/patient.h"
+#include "../include/receptionist.h"
+#include "../include/doctor.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -88,13 +90,13 @@ int wait_process(int process_id){
     int status;
     pid_t processo = waitpid(process_id, &status, 0);
     
-    if (processo = -1) { /*Houve um erro*/
+    if (processo == -1) { /*Houve um erro*/
         perror("wait_process");
         return -1;
     }
 
     else if (WIFEXITED(status)) { /*processo terminou normalmente*/
-        return WIFEXITED(status);
+        return 0;
     }
 
     else { /*erro na terminação*/

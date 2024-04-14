@@ -99,32 +99,39 @@ void launch_processes(struct data_container* data, struct communication* comm) {
 * end - termina o execução do hOSpital através da função stop_execution
 */
 void user_interaction(struct data_container* data, struct communication* comm) {
-    char input[5]; 
-    int *i = 0;
-    scanf("%s" , input);
+    printf(">Introduza um dos 4 comandos: ad (paciente) (médico), info, help, end):");
+    printf("\n");
+    char input[20]; 
+    int i = 0;
+    scanf("%s", input);
     if(strcmp(input,"info") == 0){
         read_info(data);
+        user_interaction(data, comm);
     }
     else if(strcmp(input,"help") == 0){
         printf("Pode introduzir somente as seguintes instrucoes: \n"
-        "ad paciente médico - cria uma nova admissão, através da função create_request\n"
+        "ad (paciente) (médico) - cria uma nova admissão, através da função create_request\n"
         "info - estado de uma admissão\n"
         "help - informacao sobre os comandos disponiveis\n"
-        "end - termina o execução do hOSpital\n ");
+        "end - termina o execução do hOSpital\n");
+        user_interaction(data, comm);
     }
     else if(strcmp(input,"end") == 0){
         end_execution(data, comm);
+        exit(0);
     }
-    else if(strcmp(input,"ad paciente médico") == 0){
-        create_request(i, data, comm);
+    else if(strcmp(input,"ad") == 0){
+        create_request(&i, data, comm);
+        user_interaction(data, comm);
     }
     else{
-        printf("a palavra introduzida nao e valida.\n" 
+        printf("A palavra introduzida nao e valida.\n" 
         "Pode introduzir somente as seguintes instrucoes: \n"
-        "ad paciente médico - cria uma nova admissão, através da função create_request\n"
+        "ad (paciente) (médico) - cria uma nova admissão, através da função create_request\n"
         "info - estado de uma admissão\n"
         "help - informacao sobre os comandos disponiveis\n"
-        "end - termina o execução do hOSpital\n ");
+        "end - termina o execução do hOSpital\n");
+        user_interaction(data, comm);
     }
 }
 
@@ -185,33 +192,38 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     int requesting_patient = 0, requested_doctor = 0, receiving_patient = 0,
         receiving_receptionist = 0, receiving_doctor = 0;
 
-    struct admission newAd; //cria uma nova admissao
-    newAd.id = *ad_counter;
-    newAd.status = 'N';
+    //cria uma nova admissao
+    struct admission *newAd = NULL;
+
+    newAd = malloc(sizeof(struct admission));
+    if (newAd == NULL) {
+        perror("create_request: malloc failed");
+        exit(EXIT_FAILURE);
+    }
+
+    newAd->id = *ad_counter;
+    newAd->status = 'N';
 
     printf("Insira id do paciente: ");
-    newAd.requesting_patient = IDCheckerPatient(requesting_patient, data);
-    printf("\n");
+    newAd->requesting_patient = IDCheckerPatient(requesting_patient, data);
 
     printf("Insira id do medico pretendido: ");
-    newAd.requested_doctor = IDCheckerDoctor(requested_doctor, data);
-    printf("\n");
+    newAd->requested_doctor = IDCheckerDoctor(requested_doctor, data);
 
     printf("Insira id do paciente que recebeu a admissao: ");
-    newAd.receiving_patient = IDCheckerPatient(receiving_patient, data);
-    printf("\n");
+    newAd->receiving_patient = IDCheckerPatient(receiving_patient, data);
 
     printf("Insira id do rececionista que realizou a admissao: ");
-    newAd.receiving_receptionist = IDCheckerReceptionist(receiving_receptionist, data);
-    printf("\n");
+    newAd->receiving_receptionist = IDCheckerReceptionist(receiving_receptionist, data);
 
     printf("Insira id do medico que realizou a consulta: ");
-    newAd.receiving_doctor = IDCheckerDoctor(receiving_doctor, data);
-    printf("\n");
+    newAd->receiving_doctor = IDCheckerDoctor(receiving_doctor, data);
 
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
     printf("O id da nova admissao eh: %d\n", *ad_counter);
     ad_counter++;
+
+    free(newAd);
 }
 
 /* Função que lê um id de admissão do utilizador e verifica se a mesma é valida.
@@ -221,18 +233,27 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
 */
 void read_info(struct data_container* data){
     int admission_id;
-    printf("Qual o id de admissao a consultar? ");
+    printf(">Qual o id de admissao a consultar? ");
     scanf("%d", &admission_id);
 
+    int i = 0;
+    int found = 0;
     if (admission_id >= 0 && admission_id < data->max_ads) {
-        struct admission* ad = &(data->results[admission_id]);
-        printf("Informacoes da admissao %d:\n", admission_id);
-        printf("Estado da admissao: %c\n", ad->status);
-        printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
-        printf("id do medico requisitado: %d\n", ad->requested_doctor);
-        printf("id do paciente que recebeu a admissao: %d\n", ad->receiving_patient);
-        printf("id do recepcionista que realizou a admissao: %d\n", ad->receiving_receptionist);
-        printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
+        while (found != 1 && i < MAX_RESULTS) {
+            if (data->results[i].id == admission_id){
+                printf("found");
+                found = 1;
+                struct admission* ad = &data->results[i-1];
+                printf("Informacoes da admissao '%d':\n", admission_id);
+                printf("Estado da admissao: %c\n", ad->status);
+                printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
+                printf("id do medico requisitado: %d\n", ad->requested_doctor);
+                printf("id do paciente que recebeu a admissao: %d\n", ad->receiving_patient);
+                printf("id do recepcionista que realizou a admissao: %d\n", ad->receiving_receptionist);
+                printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
+            }
+            i++;
+        }
     } else {
         printf("id de admissao invalido!\n");
     }
