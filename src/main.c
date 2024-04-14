@@ -102,7 +102,6 @@ void user_interaction(struct data_container* data, struct communication* comm) {
     printf(">Introduza um dos 4 comandos: ad (paciente) (médico), info, help, end):");
     printf("\n");
     char input[20]; 
-    int i = 0;
     scanf("%s", input);
     if(strcmp(input,"info") == 0){
         read_info(data);
@@ -121,7 +120,8 @@ void user_interaction(struct data_container* data, struct communication* comm) {
         exit(0);
     }
     else if(strcmp(input,"ad") == 0){
-        create_request(&i, data, comm);
+        int *ad_counter = data->patient_stats;
+        create_request(ad_counter, data, comm);
         user_interaction(data, comm);
     }
     else{
@@ -189,6 +189,24 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
 * admissão e incrementa o contador de admissões ad_counter.
 */
 void create_request(int* ad_counter, struct data_container* data, struct communication* comm) {
+    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    int patient_id = 0;
+    int doctor_id = 0;
+
+    printf("Insira id do paciente: ");
+    patient_id = IDCheckerPatient(patient_id, data);
+    printf("Insira id do medico pretendido: ");
+    doctor_id = IDCheckerDoctor(doctor_id, data);
+
+    newAd->id = *ad_counter;
+    newAd->requesting_patient = patient_id;
+    newAd->requested_doctor = doctor_id;
+
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
+    printf("O id da nova admissao eh: %d\n", *ad_counter);
+    ad_counter++;
+    
+    /*
     int requesting_patient = 0, requested_doctor = 0, receiving_patient = 0,
         receiving_receptionist = 0, receiving_doctor = 0;
 
@@ -224,6 +242,7 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     ad_counter++;
 
     free(newAd);
+    */
 }
 
 /* Função que lê um id de admissão do utilizador e verifica se a mesma é valida.
