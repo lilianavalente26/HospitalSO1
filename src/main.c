@@ -41,17 +41,9 @@ void main_args(int argc, char* argv[], struct data_container* data) {
 * data_container. Para tal, pode ser usada a função allocate_dynamic_memory.
 */
 void allocate_dynamic_memory_buffers(struct data_container* data) {
-    int size = data->buffers_size;
-
-    data->patient_pids = allocate_dynamic_memory(size);
-    data->receptionist_pids = allocate_dynamic_memory(size);
-    data->doctor_pids = allocate_dynamic_memory(size);
-
-    data->patient_stats = allocate_dynamic_memory(size);
-    data->receptionist_stats = allocate_dynamic_memory(size);
-    data->doctor_stats = allocate_dynamic_memory(size);
-
-    data->results = allocate_dynamic_memory(MAX_RESULTS);
+    data->patient_pids = allocate_dynamic_memory(data->n_patients*sizeof(int));
+    data->receptionist_pids = allocate_dynamic_memory(data->n_receptionists*sizeof(int));
+    data->doctor_pids = allocate_dynamic_memory(data->n_doctors*sizeof(int));
 }
 
 /* Função que reserva a memória partilhada necessária para a execução do
@@ -60,30 +52,24 @@ void allocate_dynamic_memory_buffers(struct data_container* data) {
 * pointers, assim como para o array data->results e variável data->terminate.
 * Para tal, pode ser usada a função create_shared_memory.
 */
-void create_shared_memory_buffers(struct data_container* data, struct communication* comm){
-    // reserva SHM para pacientes
-    comm->main_patient->ptrs =(struct pointers*)create_shared_memory(STR_SHM_MAIN_PATIENT_PTR, sizeof(struct pointers));
-    comm->main_patient->buffer =(struct admission*)create_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, data->buffers_size * sizeof(struct admission));
+void create_shared_memory_buffers(struct data_container* data, struct communication* comm) {
+    comm->main_patient->ptrs = create_shared_memory(STR_SHM_MAIN_PATIENT_PTR, sizeof(struct pointers));
+    comm->main_patient->buffer = create_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, data->buffers_size * sizeof(struct admission));
 
-    // reserva SHM para pacientes-recepcionistas
-    comm->patient_receptionist->buffer =(struct admission*)create_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, data->buffers_size * sizeof(struct admission));
-    comm->patient_receptionist->ptrs =(int*)create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->n_patients * sizeof(int));
+    comm->patient_receptionist->ptrs = create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->n_patients * sizeof(int));
+    comm->patient_receptionist->buffer = create_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, data->buffers_size * sizeof(struct admission));
 
-    // reserva SHM para recepcionistas-doutores
-    comm->receptionist_doctor->buffer =(struct admission*)create_shared_memory(STR_SHM_RECEPT_DOCTOR_BUFFER, data->buffers_size * sizeof(struct admission));
-    comm->receptionist_doctor->ptrs =(struct pointers*)create_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, sizeof(struct pointers));
+    comm->receptionist_doctor->ptrs = create_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, sizeof(struct pointers));
+    comm->receptionist_doctor->buffer = create_shared_memory(STR_SHM_RECEPT_DOCTOR_BUFFER, data->buffers_size * sizeof(struct admission));
 
-    // sizeOf(int) é o espaço na memória em bytes ocupado por um número inteiro
-    // reserva SHM para os stats
-    data->receptionist_stats = (int*)create_shared_memory(STR_SHM_RECEPT_STATS, data->n_receptionists * sizeof(int));
-    data->doctor_stats = (int*)create_shared_memory(STR_SHM_DOCTOR_STATS, data->n_doctors * sizeof(int));
+    data->patient_stats = create_shared_memory(STR_SHM_PATIENT_STATS, data->n_patients * sizeof(int));
+    data->receptionist_stats = create_shared_memory(STR_SHM_RECEPT_STATS, data->n_receptionists * sizeof(int));
+    data->doctor_stats = create_shared_memory(STR_SHM_DOCTOR_STATS, data->n_doctors * sizeof(int));
+   
+    data->results = create_shared_memory(STR_SHM_RESULTS, MAX_RESULTS * sizeof(struct admission));
 
-    // reserva SHM para os diagnosticos
-    data->results = (struct admission*)create_shared_memory(STR_SHM_RESULTS, MAX_RESULTS * sizeof(struct admission));
-
-    // reserva SHM para terminate
-    data->terminate = (int*)create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
-    *data->terminate = 0;
+    data->terminate = create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
+    *data->terminate = 0; 
 }
 
 /* Função que inicia os processos dos pacientes, rececionistas e
@@ -116,20 +102,20 @@ void user_interaction(struct data_container* data, struct communication* comm) {
     char input[5]; 
     int *i = 0;
     scanf("%s" , input);
-    if(strcmp(input,"info")){
+    if(strcmp(input,"info") == 0){
         read_info(data);
     }
-    else if(strcmp(input,"help")){
+    else if(strcmp(input,"help") == 0){
         printf("Pode introduzir somente as seguintes instrucoes: \n"
         "ad paciente médico - cria uma nova admissão, através da função create_request\n"
         "info - estado de uma admissão\n"
         "help - informacao sobre os comandos disponiveis\n"
         "end - termina o execução do hOSpital\n ");
     }
-    else if(strcmp(input,"end")){
+    else if(strcmp(input,"end") == 0){
         end_execution(data, comm);
     }
-    else if(strcmp(input,"ad paciente médico")){
+    else if(strcmp(input,"ad paciente médico") == 0){
         create_request(i, data, comm);
     }
     else{
@@ -408,10 +394,22 @@ void write_statistics(struct data_container* data){
 * reservados na estrutura data.
 */
 void destroy_memory_buffers(struct data_container* data, struct communication* comm){
-    free(comm->main_patient);
-    free(comm->patient_receptionist);
-    free(comm->receptionist_doctor);
-    free(data);
+    //dealocar memOria dinAmica
+    deallocate_dynamic_memory(data->patient_pids);
+    deallocate_dynamic_memory(data->receptionist_pids);
+    deallocate_dynamic_memory(data->doctor_pids);
+    //detrOi meOria partilhada
+    destroy_shared_memory(STR_SHM_MAIN_PATIENT_PTR, comm->main_patient->ptrs, sizeof(struct pointers));
+    destroy_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, comm->main_patient->buffer, data->n_patients * sizeof(int));
+    destroy_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, comm->patient_receptionist->ptrs, data->n_patients * sizeof(int));
+    destroy_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, comm->patient_receptionist->buffer, data->buffers_size * sizeof(struct admission));
+    destroy_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, comm->receptionist_doctor->ptrs, sizeof(struct pointers));
+    destroy_shared_memory(STR_SHM_RECEPT_DOCTOR_BUFFER, comm->receptionist_doctor->buffer, data->buffers_size * sizeof(struct admission));
+    destroy_shared_memory(STR_SHM_PATIENT_STATS, data->patient_stats, data->n_patients * sizeof(int));
+    destroy_shared_memory(STR_SHM_RECEPT_STATS, data->receptionist_stats, data->n_receptionists * sizeof(int));
+    destroy_shared_memory(STR_SHM_DOCTOR_STATS, data->doctor_stats, data->n_doctors * sizeof(int));
+    destroy_shared_memory(STR_SHM_RESULTS, data->results, MAX_RESULTS * sizeof(struct admission));
+    destroy_shared_memory(STR_SHM_TERMINATE, data->terminate, sizeof(int));
 }
 
 int main(int argc, char *argv[]) {

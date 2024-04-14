@@ -4,7 +4,10 @@
         "types.h": "c",
         "receptionist.h": "c",
         "patient.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "process.h": "c",
+        "main.h": "c",
+        "memory.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

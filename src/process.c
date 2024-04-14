@@ -5,13 +5,15 @@
 * Liliana Valente - fc59846
 */
 
-#include "memory.h"
-#include "main.h"
-#include "process.h"
+#include "../include/memory.h"
+#include "../include/main.h"
+#include "../include/process.h"
+#include "../include/patient.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Função que inicia um novo processo Paciente através da função fork do SO. O novo
 * processo irá executar a função execute_patient respetiva, fazendo exit do retorno.

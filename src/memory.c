@@ -6,7 +6,7 @@
 */
 
 #include <stdio.h>
-#include "memory.h"
+#include "../include/memory.h"
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -22,7 +22,7 @@
 */
 void* create_shared_memory(char* name, int size){
     int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
-    int ftruncate(int shm, off_t size); 
+    ftruncate(shm, size); 
     if(shm == -1){
         perror ("create_shared_memory_1");
         exit(1);
@@ -79,7 +79,10 @@ void destroy_shared_memory(char* name, void* ptr, int size){
 /* Função que liberta uma zona de memória dinâmica previamente reservada.
 */
 void deallocate_dynamic_memory(void* ptr){
-    free(ptr);
+    if (ptr != NULL){
+        free(ptr);
+        ptr = NULL;
+    }
 }
 
 /* Função que escreve uma admissão no buffer de memória partilhada entre a Main
@@ -93,7 +96,7 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = *ad;
-        buffer->ptrs->in++;
+        buffer->ptrs->in = (in + 1) % buffer_size;
     }
 }
 
@@ -130,7 +133,7 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
     //Verifica se o buffer estA cheio
     if ((in+1) % buffer_size != out) {
         buffer->buffer[in] = *ad;
-        buffer->ptrs->in++;
+        buffer->ptrs->in = (in + 1) % buffer_size;
     }
 }
 
