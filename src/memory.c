@@ -15,11 +15,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-/* Função que reserva uma zona de memória partilhada com tamanho indicado
-* por size e nome name, preenche essa zona de memória com o valor 0, e 
-* retorna um apontador para a mesma. Pode concatenar o resultado da função
-* getuid() a name, para tornar o nome único para o processo.
-*/
 void* create_shared_memory(char* name, int size){
     int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
     ftruncate(shm, size); 
@@ -40,10 +35,6 @@ void* create_shared_memory(char* name, int size){
     return ptrSharedMemory;
 }
 
-/* Função que reserva uma zona de memória dinâmica com tamanho indicado
-* por size, preenche essa zona de memória com o valor 0, e retorna um 
-* apontador para a mesma.
-*/
 void* allocate_dynamic_memory(int size){
     //aloca memOria dinAmica com size
     int *ptr = malloc(size);
@@ -58,8 +49,6 @@ void* allocate_dynamic_memory(int size){
     return ptr;
 }
 
-/* Função que liberta uma zona de memória partilhada previamente reservada.
-*/
 void destroy_shared_memory(char* name, void* ptr, int size){
     int statusMap = munmap(ptr, size); 
 
@@ -76,8 +65,6 @@ void destroy_shared_memory(char* name, void* ptr, int size){
     }
 }
 
-/* Função que liberta uma zona de memória dinâmica previamente reservada.
-*/
 void deallocate_dynamic_memory(void* ptr){
     if (ptr != NULL){
         free(ptr);
@@ -85,11 +72,6 @@ void deallocate_dynamic_memory(void* ptr){
     }
 }
 
-/* Função que escreve uma admissão no buffer de memória partilhada entre a Main
-* e os pacientes. A admissão deve ser escrita numa posição livre do buffer, 
-* tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
-* Se não houver nenhuma posição livre, não escreve nada.
-*/
 void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
     int out = buffer->ptrs->out;
@@ -100,11 +82,6 @@ void write_main_patient_buffer(struct circular_buffer* buffer, int buffer_size, 
     }
 }
 
-/* Função que escreve uma admissão no buffer de memória partilhada entre os pacientes
-* e os rececionistas. A admissão deve ser escrita numa posição livre do buffer, 
-* tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
-* Se não houver nenhuma posição livre, não escreve nada.
-*/
 void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
     int i = 0;
     int written = 0;
@@ -122,11 +99,6 @@ void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buf
     }
 }
 
-/* Função que escreve uma admissão no buffer de memória partilhada entre os rececionistas
-* e os médicos. A admissão deve ser escrita numa posição livre do buffer, 
-* tendo em conta o tipo de buffer e as regras de escrita em buffers desse tipo.
-* Se não houver nenhuma posição livre, não escreve nada.
-*/
 void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
     int out = buffer->ptrs->out;
@@ -137,12 +109,6 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
     }
 }
 
-/* Função que lê uma admissão do buffer de memória partilhada entre a Main
-* e os pacientes, se houver alguma disponível para ler que seja direcionada
-* ao paciente especificado.
-* A leitura deve ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo.
-* Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
-*/
 void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
     int out = buffer->ptrs->out;
@@ -162,11 +128,6 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
     }
 }
 
-/* Função que lê uma admissão do buffer de memória partilhada entre os pacientes e rececionistas,
-* se houver alguma disponível para ler (qualquer rececionista pode ler qualquer admissão).
-* A leitura deve ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo.
-* Se não houver nenhuma admissão disponível, afeta ad->id com o valor -1.
-*/
 void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
     int i = 0;
     int read = 0;
@@ -187,11 +148,6 @@ void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buff
     }
 }
 
-/* Função que lê uma admissão do buffer de memória partilhada entre os rececionistas e os médicos,
-* se houver alguma disponível para ler dirigida ao médico especificado. A leitura deve
-* ser feita tendo em conta o tipo de buffer e as regras de leitura em buffers desse tipo. Se não houver
-* nenhuma admissão disponível, afeta ad->id com o valor -1.
-*/
 void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_id, int buffer_size, struct admission* ad){
     int in = buffer->ptrs->in;
     int out = buffer->ptrs->out;
