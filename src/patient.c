@@ -58,5 +58,5 @@ void patient_process_admission(struct admission* ad, int patient_id, struct data
 * pacientes e os rececionistas.
 */
 void patient_send_admission(struct admission* ad, struct data_container* data, struct communication* comm){
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, ad);
+    write_patient_receptionist_buffer(comm->patient_receptionist, data->buffers_size, ad);
 }

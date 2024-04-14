@@ -6,17 +6,66 @@
 */
 
 #include <stdio.h>
-#include <main.h>
-#include <doctor.h>
-#include <patient.h>
-#include <receptionist.h>
-#include <process.h>
+#include "memory.h"
+#include "main.h"
+#include "doctor.h"
+#include "patient.h"
+#include "receptionist.h"
+#include "process.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* MEtodo Auxiliar
+* Verifica se o patient_id E vAlido.
+* Se vAlido, retorna o patient_id.
+* Caso contrArio, pede um novo patient_id.
+*/
+int IDCheckerPatient(int patient_id, struct data_container* data) {
+    scanf("%d", &patient_id);
+    if (patient_id > 0 && patient_id <= data->n_patients) {
+        return patient_id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDCheckerPatient(patient_id, data);
+    }
+}
+
+/* MEtodo Auxiliar
+* Verifica se o recepcionist_id E vAlido.
+* Se vAlido, retorna o recepcionist_id.
+* Caso contrArio, pede um novo recepcionist_id.
+*/
+int IDCheckerReceptionist(int receptionist_id, struct data_container* data) {
+    scanf("%d", &receptionist_id);
+    if (receptionist_id > 0 && receptionist_id <= data->n_receptionists) {
+        return receptionist_id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDCheckerReceptionist(receptionist_id, data);
+    }
+}
+
+/* MEtodo Auxiliar
+* Verifica se o doctor_id E vAlido.
+* Se vAlido, retorna o doctor_id.
+* Caso contrArio, pede um novo doctor_id.
+*/
+int IDCheckerDoctor(int doctor_id, struct data_container* data) {
+    scanf("%d", &doctor_id);
+    if (doctor_id > 0 && doctor_id <= data->n_doctors) {
+        return doctor_id;
+    }
+    else {
+        printf("Id invAlido, insira um id vAlido:");
+        return IDCheckerDoctor(doctor_id, data);
+    }
+}
 
 /* Função que lê os argumentos da aplicação, nomeadamente o número
 * máximo de admissões, o tamanho dos buffers de memória partilhada
@@ -135,53 +184,6 @@ void user_interaction(struct data_container* data, struct communication* comm) {
     }
 }
 
-/* MEtodo Auxiliar
-* Verifica se o patient_id E vAlido.
-* Se vAlido, retorna o patient_id.
-* Caso contrArio, pede um novo patient_id.
-*/
-int IDCheckerPatient(int patient_id, struct data_container* data) {
-    scanf("%d", &patient_id);
-    if (patient_id > 0 && patient_id <= data->n_patients) {
-        return patient_id;
-    }
-    else {
-        printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerPatient(patient_id, data);
-    }
-}
-
-/* MEtodo Auxiliar
-* Verifica se o recepcionist_id E vAlido.
-* Se vAlido, retorna o recepcionist_id.
-* Caso contrArio, pede um novo recepcionist_id.
-*/
-int IDCheckerReceptionist(int receptionist_id, struct data_container* data) {
-    scanf("%d", &receptionist_id);
-    if (receptionist_id > 0 && receptionist_id <= data->n_receptionists) {
-        return receptionist_id;
-    }
-    else {
-        printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerReceptionist(receptionist_id, data);
-    }
-}
-
-/* MEtodo Auxiliar
-* Verifica se o doctor_id E vAlido.
-* Se vAlido, retorna o doctor_id.
-* Caso contrArio, pede um novo doctor_id.
-*/
-int IDCheckerDoctor(int doctor_id, struct data_container* data) {
-    scanf("%d", &doctor_id);
-    if (doctor_id > 0 && doctor_id <= data->n_doctors) {
-        return doctor_id;
-    }
-    else {
-        printf("Id invAlido, insira um id vAlido:");
-        return IDCheckerDoctor(doctor_id, data);
-    }
-}
 
 /* Cria uma nova admissão identificada pelo valor atual de ad_counter e com os 
 * dados introduzidos pelo utilizador na linha de comandos, escrevendo a mesma 
@@ -203,21 +205,18 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd->requested_doctor = doctor_id;
 
     write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: %d\n", *ad_counter);
-    ad_counter++;
-    
+    printf("O id da nova admissao eh: %d\n", newAd->id);
+    data->results[newAd->id] = *newAd;
+    *ad_counter += 1;
+    //atualiza data
+    data->results[newAd->id] = *newAd;
+    data->patient_pids[newAd->id] = newAd->requesting_patient;
     /*
     int requesting_patient = 0, requested_doctor = 0, receiving_patient = 0,
         receiving_receptionist = 0, receiving_doctor = 0;
 
     //cria uma nova admissao
-    struct admission *newAd = NULL;
-
-    newAd = malloc(sizeof(struct admission));
-    if (newAd == NULL) {
-        perror("create_request: malloc failed");
-        exit(EXIT_FAILURE);
-    }
+    struct admission *newAd = allocate_dynamic_memory(6*sizeof(int) + 1*sizeof(char));
 
     newAd->id = *ad_counter;
     newAd->status = 'N';
@@ -228,8 +227,7 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     printf("Insira id do medico pretendido: ");
     newAd->requested_doctor = IDCheckerDoctor(requested_doctor, data);
 
-    printf("Insira id do paciente que recebeu a admissao: ");
-    newAd->receiving_patient = IDCheckerPatient(receiving_patient, data);
+    newAd->receiving_patient = newAd->requesting_patient;
 
     printf("Insira id do rececionista que realizou a admissao: ");
     newAd->receiving_receptionist = IDCheckerReceptionist(receiving_receptionist, data);
@@ -238,11 +236,17 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd->receiving_doctor = IDCheckerDoctor(receiving_doctor, data);
 
     write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: %d\n", *ad_counter);
+    printf("O id da nova admissao eh: %d\n", newAd->id);
+    //atualiza data
+    data->results[newAd->id] = *newAd;
+    data->patient_pids[newAd->id] = newAd->requesting_patient;
+    data->patient_stats[newAd->receiving_patient-1]++;
+    data->receptionist_stats[newAd->receiving_receptionist-1]++;
+    data->doctor_stats[newAd->receiving_doctor-1]++;
+
     ad_counter++;
 
-    free(newAd);
-    */
+    free(newAd);*/
 }
 
 /* Função que lê um id de admissão do utilizador e verifica se a mesma é valida.
@@ -260,9 +264,8 @@ void read_info(struct data_container* data){
     if (admission_id >= 0 && admission_id < data->max_ads) {
         while (found != 1 && i < MAX_RESULTS) {
             if (data->results[i].id == admission_id){
-                printf("found");
                 found = 1;
-                struct admission* ad = &data->results[i-1];
+                struct admission* ad = &data->results[i];
                 printf("Informacoes da admissao '%d':\n", admission_id);
                 printf("Estado da admissao: %c\n", ad->status);
                 printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
