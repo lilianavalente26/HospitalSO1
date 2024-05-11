@@ -68,7 +68,7 @@ void launch_processes(struct data_container* data, struct communication* comm) {
     }
     //DA launch a cada doctor
     for (int i = 0; i < data->n_doctors; i++) {
-        //data->doctor_pids[i] = launch_doctor(i,data,comm);
+        data->doctor_pids[i] = launch_doctor(i,data,comm);
     }
 }
 
@@ -77,7 +77,7 @@ void user_interaction(struct data_container* data, struct communication* comm) {
     int ad_counter = 0;
     while (*data->terminate != 1)
     {
-        printf(">Introduza um dos 4 comandos: ad (paciente) (mEdico), info, help, end):");
+        printf(">Introduza um dos 5 comandos: ad (paciente) (mEdico), info, help, status, end):");
         printf("\n");
         scanf("%s", input);
         if(strcmp(input,"info") == 0){
@@ -96,6 +96,9 @@ void user_interaction(struct data_container* data, struct communication* comm) {
         }
         else if(strcmp(input,"ad") == 0){;
             create_request(&ad_counter, data, comm);
+        }
+        else if(strcmp(input,"status")==0){
+            print_status(data);
         }
         else{
             printf("A palavra introduzida nao E vAlida.\n" 
@@ -174,16 +177,13 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     printf("O id da nova admissao eh: %d\n", newAd->id);
     data->results[newAd->id] = *newAd;
     *ad_counter += 1;
-
-    //atualiza data
-
+    /**launch_processes(data,comm);
     patient_receive_admission(newAd,patient_id,data,comm);
     patient_send_admission(newAd,data,comm);
     receptionist_receive_admission(newAd,data,comm);
     receptionist_send_admission(newAd,data,comm);
     doctor_receive_admission(newAd,doctor_id,data,comm);
-
-    data->results[newAd->id] = *newAd;
+    */
 }
 
 void read_info(struct data_container* data){

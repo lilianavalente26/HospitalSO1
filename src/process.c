@@ -81,7 +81,7 @@ int wait_process(int process_id){
     }
 
     else if (WIFEXITED(status)) { /*processo terminou normalmente*/
-        return 0;
+        return WEXITSTATUS(status);
     }
 
     else { /*erro na terminação*/

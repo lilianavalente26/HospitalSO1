@@ -26,8 +26,9 @@ int execute_receptionist(int receptionist_id, struct data_container* data, struc
 
     while (data->terminate == 0){
         if(comm->patient_receptionist->buffer->id!=-1){
-            receptionist_receive_admission(comm->main_patient->buffer,data,comm);
+            receptionist_receive_admission(newAd,data,comm);
             receptionist_process_admission(newAd, receptionist_id,data);
+            receptionist_send_admission(newAd,data,comm);        
         }
     }
     return count_receptionist_stats(data); //numero de admissoes realizadas
@@ -39,11 +40,7 @@ void receptionist_receive_admission(struct admission* ad, struct data_container*
         return;
     } 
     //Escolhe um receptionist aleatOrio para receber a admission
-    else {
-        srand(time(NULL));
-        int rand_index = rand() % data->n_receptionists;
-        int receptionist_id = data->receptionist_pids[rand_index];
-        
+    else {    
         read_patient_receptionist_buffer(comm->patient_receptionist,data->buffers_size,ad);
     }
 }

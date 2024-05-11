@@ -25,8 +25,9 @@ int execute_patient(int patient_id, struct data_container* data, struct communic
     
     while (*data->terminate == 0){
         if(comm->main_patient->buffer->id!=-1){
-            patient_receive_admission(comm->main_patient->buffer, patient_id, data,comm);
-            patient_process_admission(newAd,patient_id,data);        
+            patient_receive_admission(newAd, patient_id, data,comm);
+            patient_process_admission(newAd,patient_id,data);
+            patient_send_admission(newAd,data,comm);        
         }
     }
     return count_patient_stats(data); //numero de admissoes pedidas
