@@ -111,4 +111,5 @@ void write_statistics(struct data_container* data);
 */
 void destroy_memory_buffers(struct data_container* data, struct communication* comm);
 
+
 #endif

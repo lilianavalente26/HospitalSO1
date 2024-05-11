@@ -11,13 +11,26 @@
 #include <stdlib.h>
 #include <time.h>
 
+int count_receptionist_stats(struct data_container* data) {
+    int count = 0;
+
+    for (int i = 0; i < data->n_receptionists; i++) {
+        count += data->receptionist_stats[i];
+    }
+
+    return count;
+}
+
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
+    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+
     while (data->terminate == 0){
         if(comm->patient_receptionist->buffer->id!=-1){
-            receptionist_receive_admission(comm->patient_receptionist->buffer,data,comm);
+            receptionist_receive_admission(comm->main_patient->buffer,data,comm);
+            receptionist_process_admission(newAd, receptionist_id,data);
         }
     }
-    return *data->receptionist_stats; //numero de admissoes realizadas
+    return count_receptionist_stats(data); //numero de admissoes realizadas
 }
 
 void receptionist_receive_admission(struct admission* ad, struct data_container* data, struct communication* comm){
@@ -31,7 +44,7 @@ void receptionist_receive_admission(struct admission* ad, struct data_container*
         int rand_index = rand() % data->n_receptionists;
         int receptionist_id = data->receptionist_pids[rand_index];
         
-        receptionist_process_admission(ad, receptionist_id, data);
+        read_patient_receptionist_buffer(comm->patient_receptionist,data->buffers_size,ad);
     }
 }
 
@@ -39,10 +52,10 @@ void receptionist_process_admission(struct admission* ad, int receptionist_id, s
     //Alterar os dados
     ad->receiving_receptionist = receptionist_id;
     ad->status = 'R';
-    data->receptionist_stats++;
+    data->receptionist_stats[receptionist_id]++;
 
     //Atualizar a admission no data
-    data->results = ad;
+    data->results[ad->id] = *ad;
 }
 
 void receptionist_send_admission(struct admission* ad, struct data_container* data, struct communication* comm){

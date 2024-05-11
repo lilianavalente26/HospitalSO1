@@ -1,5 +1,4 @@
-/*
-* Grupo SO-024
+/* Grupo SO-024
 * Afonso Santos - fc59808
 * Madalena Machado - fc59858
 * Liliana Valente - fc59846
@@ -61,15 +60,15 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
 void launch_processes(struct data_container* data, struct communication* comm) {
     //DA launch a cada pacient
     for (int i = 0; i < data->n_patients; i++){
-        launch_patient(data->patient_pids[i],data,comm);
+        data->patient_pids[i] = launch_patient(i,data,comm);
     }
     //DA launch a cada recepcionist
     for (int i = 0; i < data->n_receptionists; i++) {
-        launch_receptionist(data->receptionist_pids[i],data,comm);
+        data->receptionist_pids[i] = launch_receptionist(i,data,comm);
     }
     //DA launch a cada doctor
     for (int i = 0; i < data->n_doctors; i++) {
-        launch_doctor(data->doctor_pids[i],data,comm);
+        //data->doctor_pids[i] = launch_doctor(i,data,comm);
     }
 }
 
@@ -116,7 +115,7 @@ void user_interaction(struct data_container* data, struct communication* comm) {
 */
 int IDCheckerPatient(int patient_id, struct data_container* data) {
     scanf("%d", &patient_id);
-    if (patient_id >= 0 && patient_id <= data->n_patients) {
+    if (patient_id >= 0 && patient_id < data->n_patients) {
         return patient_id;
     }
     else {
@@ -132,7 +131,7 @@ int IDCheckerPatient(int patient_id, struct data_container* data) {
 */
 int IDCheckerReceptionist(int receptionist_id, struct data_container* data) {
     scanf("%d", &receptionist_id);
-    if (receptionist_id >= 0 && receptionist_id <= data->n_receptionists) {
+    if (receptionist_id >= 0 && receptionist_id < data->n_receptionists) {
         return receptionist_id;
     }
     else {
@@ -148,7 +147,7 @@ int IDCheckerReceptionist(int receptionist_id, struct data_container* data) {
 */
 int IDCheckerDoctor(int doctor_id, struct data_container* data) {
     scanf("%d", &doctor_id);
-    if (doctor_id >= 0 && doctor_id <= data->n_doctors) {
+    if (doctor_id >= 0 && doctor_id < data->n_doctors) {
         return doctor_id;
     }
     else {
@@ -175,24 +174,29 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     printf("O id da nova admissao eh: %d\n", newAd->id);
     data->results[newAd->id] = *newAd;
     *ad_counter += 1;
+
     //atualiza data
+
     patient_receive_admission(newAd,patient_id,data,comm);
     patient_send_admission(newAd,data,comm);
     receptionist_receive_admission(newAd,data,comm);
     receptionist_send_admission(newAd,data,comm);
     doctor_receive_admission(newAd,doctor_id,data,comm);
+
     data->results[newAd->id] = *newAd;
-    data->patient_pids[newAd->id] = newAd->requesting_patient;
 }
 
 void read_info(struct data_container* data){
+    //Perguntar pela admisssion
     int admission_id;
     printf(">Qual o id de admissao a consultar? ");
     scanf("%d", &admission_id);
 
     int i = 0;
     int found = 0;
+    //Verifica se admission E vAlida
     if (admission_id >= 0 && admission_id < data->max_ads) {
+        //Loop até encontrar a admission
         while (found != 1 && i < MAX_RESULTS) {
             if (data->results[i].id == admission_id){
                 found = 1;
@@ -206,8 +210,10 @@ void read_info(struct data_container* data){
                 printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
             }
             i++;
-        }
-    } else {
+        }   
+    }
+    //Caso nAo seja vAlido 
+    else {
         printf("id de admissao invalido!\n");
     }
 }
@@ -274,6 +280,16 @@ void print_doctor_ids(struct data_container* data) {
 */
 void print_data_results(struct data_container* data) {
     printf("Admission results:");
+
+    for (int i = 0; i < MAX_RESULTS; i++) {
+        if (i == 0) {
+            printf("[%d,", data->results[i].id);
+        }
+        else {
+            printf("%d,", data->results[i].id);
+        }
+    }
+    /*
     int j = 0;
     while (data->results[j].id != -1){
         if (j == 0) {
@@ -287,6 +303,7 @@ void print_data_results(struct data_container* data) {
         }
         j++;
     }
+    */
     printf("\n");
 }
 
@@ -333,15 +350,15 @@ void write_statistics(struct data_container* data){
     if(*data->terminate == 1){
         for (int i = 0; i < data->n_patients; i++)
         {
-            printf("O numero de admissoes solicitadas pelo paciente %d, corresponde a %d\n",i,data->patient_stats[i]);
+            printf("O numero de admissoes solicitadas pelo paciente %d, corresponde a %d\n",i, data->patient_stats[i]);
         }
         for (int i = 0; i < data->n_receptionists; i++)
         {
-            printf("O numero de admissoes realizadas pelo rececionista %d, corresponde a %d\n",i,data->receptionist_stats[i]);
+            printf("O numero de admissoes realizadas pelo rececionista %d, corresponde a %d\n",i, data->receptionist_stats[i]);
         }
         for (int i = 0; i < data->n_doctors; i++)
         {
-            printf("O numero de admissoes atendidas pelo medico %d, corresponde a %d\n",i,data->doctor_stats[i]);
+            printf("O numero de admissoes atendidas pelo medico %d, corresponde a %d\n",i, data->doctor_stats[i]);
         }
     }
 }
@@ -351,7 +368,7 @@ void destroy_memory_buffers(struct data_container* data, struct communication* c
     deallocate_dynamic_memory(data->patient_pids);
     deallocate_dynamic_memory(data->receptionist_pids);
     deallocate_dynamic_memory(data->doctor_pids);
-    //detrOi meOria partilhada
+    //destrOi meOria partilhada
     destroy_shared_memory(STR_SHM_MAIN_PATIENT_PTR, comm->main_patient->ptrs, sizeof(struct pointers));
     destroy_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, comm->main_patient->buffer, data->n_patients * sizeof(int));
     destroy_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, comm->patient_receptionist->ptrs, data->n_patients * sizeof(int));

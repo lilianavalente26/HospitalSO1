@@ -30,8 +30,6 @@ void* create_shared_memory(char* name, int size){
         exit(1);
     }
 
-    memset(ptrSharedMemory, 0, size);
-
     return ptrSharedMemory;
 }
 
@@ -39,13 +37,7 @@ void* allocate_dynamic_memory(int size){
     //aloca memOria dinAmica com size
     int *ptr = malloc(size);
     //Houve erro a alocar
-    if (ptr == NULL){
-        perror("allocate_dynamic_memory");
-        exit(1);
-    }
-    //preenche essa zona de memória com o valor 0
-    *ptr = 0;
-    //retorna o apontador para a mesma
+    bzero(ptr,size);
     return ptr;
 }
 
