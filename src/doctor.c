@@ -23,8 +23,8 @@ int execute_doctor(int doctor_id, struct data_container* data, struct communicat
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
 
     while (data->terminate == 0){
-        if(comm->receptionist_doctor->buffer->id!=-1){
-            doctor_receive_admission(newAd, doctor_id, data,comm);
+        doctor_receive_admission(newAd, doctor_id, data,comm);
+        if(newAd->id !=-1){
             doctor_process_admission(newAd,doctor_id,data);
         }
     }
@@ -35,7 +35,7 @@ void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_c
     if (*data->terminate == 1) {
         return; // ja nao ha mais admissoes spara admitir
     }
-    if(ad->receiving_doctor == doctor_id){
+    else{
         read_receptionist_doctor_buffer(comm->receptionist_doctor, doctor_id, data->buffers_size, ad);
     }
 }

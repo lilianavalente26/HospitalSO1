@@ -72,9 +72,20 @@ void launch_processes(struct data_container* data, struct communication* comm) {
     }
 }
 
+int count_patient_stats1(struct data_container* data) {
+    int count = 0;
+
+    for (int i = 0; i < data->n_patients; i++) {
+        count += data->patient_stats[i];
+    }
+
+    return count;
+}
+
 void user_interaction(struct data_container* data, struct communication* comm) {
     char input[20]; 
     int ad_counter = 0;
+    printf("%d", count_patient_stats1(data));
     while (*data->terminate != 1)
     {
         printf(">Introduza um dos 5 comandos: ad (paciente) (mEdico), info, help, status, end):");
@@ -88,7 +99,8 @@ void user_interaction(struct data_container* data, struct communication* comm) {
             "ad (paciente) (mEdico) - cria uma nova admissAo, atravEs da funcAo create_request\n"
             "info - estado de uma admissAo\n"
             "help - informacAo sobre os comandos disponIveis\n"
-            "end - termina o execucAo do hOSpital\n");
+            "end - termina o execucAo do hOSpital\n"
+            "status - dA o status da execuCAo\n");
         }
         else if(strcmp(input,"end") == 0){
             end_execution(data, comm);
@@ -106,7 +118,8 @@ void user_interaction(struct data_container* data, struct communication* comm) {
             "ad (paciente) (médico) - cria uma nova admissAo, atravEs da funcAo create_request\n"
             "info - estado de uma admissAo\n"
             "help - informacAo sobre os comandos disponIveis\n"
-            "end - termina o execucAo do hOSpital\n");
+            "end - termina o execucAo do hOSpital\n"
+            "status - dA o status da execuCAo\n");
         }
     }
 }
@@ -172,13 +185,16 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd->id = *ad_counter;
     newAd->requesting_patient = patient_id;
     newAd->requested_doctor = doctor_id;
+    newAd->receiving_patient = -1;
+    newAd->receiving_receptionist = -1;
+    newAd->receiving_doctor = -1;
+    newAd->status = 'M';
 
     write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
     printf("O id da nova admissao eh: %d\n", newAd->id);
     data->results[newAd->id] = *newAd;
     *ad_counter += 1;
-    /**launch_processes(data,comm);
-    patient_receive_admission(newAd,patient_id,data,comm);
+    /**patient_receive_admission(newAd,patient_id,data,comm);
     patient_send_admission(newAd,data,comm);
     receptionist_receive_admission(newAd,data,comm);
     receptionist_send_admission(newAd,data,comm);

@@ -24,8 +24,8 @@ int execute_patient(int patient_id, struct data_container* data, struct communic
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
     
     while (*data->terminate == 0){
-        if(comm->main_patient->buffer->id!=-1){
-            patient_receive_admission(newAd, patient_id, data,comm);
+        patient_receive_admission(newAd, patient_id, data,comm);
+        if(newAd->id != -1){
             patient_process_admission(newAd,patient_id,data);
             patient_send_admission(newAd,data,comm);        
         }
@@ -37,9 +37,9 @@ void patient_receive_admission(struct admission* ad, int patient_id, struct data
     if (*data->terminate == 1) {
         return; 
     }
-    else if(ad->receiving_patient == patient_id){
+    else
         read_main_patient_buffer(comm->main_patient,patient_id,data->buffers_size,ad);
-    }
+    
 }
 
 void patient_process_admission(struct admission* ad, int patient_id, struct data_container* data){

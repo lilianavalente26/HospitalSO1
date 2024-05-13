@@ -25,8 +25,8 @@ int execute_receptionist(int receptionist_id, struct data_container* data, struc
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
 
     while (data->terminate == 0){
-        if(comm->patient_receptionist->buffer->id!=-1){
-            receptionist_receive_admission(newAd,data,comm);
+        receptionist_receive_admission(newAd,data,comm);
+        if(newAd->id !=-1){
             receptionist_process_admission(newAd, receptionist_id,data);
             receptionist_send_admission(newAd,data,comm);        
         }
