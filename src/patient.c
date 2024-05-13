@@ -20,20 +20,20 @@ int count_patient_stats(struct data_container* data) {
     return count;
 }
 
-int execute_patient(int patient_id, struct data_container* data, struct communication* comm){
+int execute_patient(int patient_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
     
     while (*data->terminate == 0){
-        patient_receive_admission(newAd, patient_id, data,comm);
+        patient_receive_admission(newAd, patient_id, data,comm,sems);
         if(newAd->id != -1){
-            patient_process_admission(newAd,patient_id,data);
-            patient_send_admission(newAd,data,comm);        
+            patient_process_admission(newAd,patient_id,data,sems);
+            patient_send_admission(newAd,data,comm,sems);        
         }
     }
     return count_patient_stats(data); //numero de admissoes pedidas
 }
 
-void patient_receive_admission(struct admission* ad, int patient_id, struct data_container* data, struct communication* comm){
+void patient_receive_admission(struct admission* ad, int patient_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     if (*data->terminate == 1) {
         return; 
     }
@@ -42,7 +42,7 @@ void patient_receive_admission(struct admission* ad, int patient_id, struct data
     
 }
 
-void patient_process_admission(struct admission* ad, int patient_id, struct data_container* data){
+void patient_process_admission(struct admission* ad, int patient_id, struct data_container* data, struct semaphores* sems){
     //Alterar os dados
     ad->receiving_patient = patient_id;
     ad->status = 'P';
@@ -52,6 +52,6 @@ void patient_process_admission(struct admission* ad, int patient_id, struct data
     data->results[ad->id] = *ad;
 }
 
-void patient_send_admission(struct admission* ad, struct data_container* data, struct communication* comm){
+void patient_send_admission(struct admission* ad, struct data_container* data, struct communication* comm, struct semaphores* sems){
     write_patient_receptionist_buffer(comm->patient_receptionist, data->buffers_size, ad);
 }

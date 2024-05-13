@@ -5,11 +5,13 @@
 */
 
 #include <stdio.h>
-#include <main.h>
-#include <doctor.h>
-#include <patient.h>
-#include <receptionist.h>
-#include <process.h>
+#include "main.h"
+#include "doctor.h"
+#include "patient.h"
+#include "receptionist.h"
+#include "process.h"
+#include "configuration.h"
+#include "synchronization.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -18,15 +20,7 @@
 #include <string.h>
 
 void main_args(int argc, char* argv[], struct data_container* data) {
-    if (argc != 6) {
-        perror("NUmero de argumentos inválidos");
-        exit(1);
-    }
-    data->max_ads = atoi(argv[1]);
-    data->buffers_size = atoi(argv[2]);
-    data->n_patients = atoi(argv[3]);
-    data->n_receptionists = atoi(argv[4]);
-    data->n_doctors = atoi(argv[5]);
+    configArgs(argc, argv, data);
 }
 
 
@@ -57,18 +51,18 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
     *data->terminate = 0; 
 }
 
-void launch_processes(struct data_container* data, struct communication* comm) {
+void launch_processes(struct data_container* data, struct communication* comm, struct semaphores* sems) {
     //DA launch a cada pacient
     for (int i = 0; i < data->n_patients; i++){
-        data->patient_pids[i] = launch_patient(i,data,comm);
+        data->patient_pids[i] = launch_patient(i,data,comm,sems);
     }
     //DA launch a cada recepcionist
     for (int i = 0; i < data->n_receptionists; i++) {
-        data->receptionist_pids[i] = launch_receptionist(i,data,comm);
+        data->receptionist_pids[i] = launch_receptionist(i,data,comm,sems);
     }
     //DA launch a cada doctor
     for (int i = 0; i < data->n_doctors; i++) {
-        data->doctor_pids[i] = launch_doctor(i,data,comm);
+        data->doctor_pids[i] = launch_doctor(i,data,comm,sems);
     }
 }
 
@@ -82,7 +76,7 @@ int count_patient_stats1(struct data_container* data) {
     return count;
 }
 
-void user_interaction(struct data_container* data, struct communication* comm) {
+void user_interaction(struct data_container* data, struct communication* comm, struct semaphores* sems) {
     char input[20]; 
     int ad_counter = 0;
     printf("%d", count_patient_stats1(data));
@@ -92,7 +86,7 @@ void user_interaction(struct data_container* data, struct communication* comm) {
         printf("\n");
         scanf("%s", input);
         if(strcmp(input,"info") == 0){
-            read_info(data);
+            read_info(data,sems);
         }
         else if(strcmp(input,"help") == 0){
             printf("Pode introduzir somente as seguintes instrucOes: \n"
@@ -103,14 +97,14 @@ void user_interaction(struct data_container* data, struct communication* comm) {
             "status - dA o status da execuCAo\n");
         }
         else if(strcmp(input,"end") == 0){
-            end_execution(data, comm);
+            end_execution(data, comm,sems);
             exit(0);
         }
         else if(strcmp(input,"ad") == 0){;
-            create_request(&ad_counter, data, comm);
+            create_request(&ad_counter, data, comm,sems);
         }
         else if(strcmp(input,"status")==0){
-            print_status(data);
+            print_status(data,sems);
         }
         else{
             printf("A palavra introduzida nao E vAlida.\n" 
@@ -172,7 +166,7 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
     }
 }
 
-void create_request(int* ad_counter, struct data_container* data, struct communication* comm) {
+void create_request(int* ad_counter, struct data_container* data, struct communication* comm, struct semaphores* sems) {
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
     int patient_id = 0;
     int doctor_id = 0;
@@ -202,7 +196,7 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     */
 }
 
-void read_info(struct data_container* data){
+void read_info(struct data_container* data, struct semaphores* sems){
     //Perguntar pela admisssion
     int admission_id;
     printf(">Qual o id de admissao a consultar? ");
@@ -305,25 +299,10 @@ void print_data_results(struct data_container* data) {
             printf("%d,", data->results[i].id);
         }
     }
-    /*
-    int j = 0;
-    while (data->results[j].id != -1){
-        if (j == 0) {
-            printf("[%d,", data->results[j].id);
-        }
-        else if (data->results[j+1].id == -1){
-            printf("%d,", data->results[j].id);
-        }
-        else{
-            printf("%d]", data->results[j].id);
-        }
-        j++;
-    }
-    */
     printf("\n");
 }
 
-void print_status(struct data_container* data) {
+void print_status(struct data_container* data, struct semaphores* sems) {
     printf("max_ads:%d\n",data->max_ads);
     printf("buffers_size:%d\n",data->buffers_size);
     printf("n_patient:%d\n",data->n_patients);
@@ -339,7 +318,7 @@ void print_status(struct data_container* data) {
     printf("%d", *data->terminate);
 }
 
-void end_execution(struct data_container* data, struct communication* comm){
+void end_execution(struct data_container* data, struct communication* comm, struct semaphores* sems){
     *data->terminate = 1;
     wait_processes(data);
     write_statistics(data);
@@ -379,6 +358,53 @@ void write_statistics(struct data_container* data){
     }
 }
 
+void create_semaphores(struct data_container *data, struct semaphores *sems){
+    semaphore_create(STR_SEM_MAIN_PATIENT_FULL,0);
+    semaphore_create(STR_SEM_MAIN_PATIENT_EMPTY,data->buffers_size);
+    semaphore_create(STR_SEM_MAIN_PATIENT_MUTEX,1);
+
+    semaphore_create(STR_SEM_PATIENT_RECEPT_FULL,0);
+    semaphore_create(STR_SEM_PATIENT_RECEPT_EMPTY,data->buffers_size);
+    semaphore_create(STR_SEM_PATIENT_RECEPT_MUTEX,1);
+
+    semaphore_create(STR_SEM_RECEPT_DOCTOR_FULL,0);
+    semaphore_create(STR_SEM_RECEPT_DOCTOR_EMPTY,data->buffers_size);
+    semaphore_create(STR_SEM_RECEPT_DOCTOR_MUTEX,1);
+
+    semaphore_create(STR_SEM_PATIENT_STATS_MUTEX,data->n_patients);
+    semaphore_create(STR_SEM_RECEPT_STATS_MUTEX,data->n_receptionists);
+    semaphore_create(STR_SHM_DOCTOR_STATS,data->n_doctors);
+    semaphore_create(STR_SEM_RESULTS_MUTEX,MAX_RESULTS);
+    semaphore_create(STR_SEM_TERMINATE_MUTEX,data->terminate);    
+}
+
+void wakeup_processes(struct data_container *data, struct semaphores *sems){
+    produce_end(sems->main_patient);
+    produce_end(sems->patient_receptionist);
+    produce_end(sems->receptionist_doctor);
+
+}
+
+void destroy_semaphores(struct semaphores *sems){
+    semaphore_destroy(STR_SEM_MAIN_PATIENT_FULL,sems->main_patient->full);
+    semaphore_destroy(STR_SEM_MAIN_PATIENT_EMPTY,sems->main_patient->empty);
+    semaphore_destroy(STR_SEM_MAIN_PATIENT_MUTEX,sems->main_patient->mutex);
+
+    semaphore_destroy(STR_SEM_PATIENT_RECEPT_FULL,sems->patient_receptionist->full);
+    semaphore_destroy(STR_SEM_PATIENT_RECEPT_EMPTY,sems->patient_receptionist->empty);
+    semaphore_destroy(STR_SEM_PATIENT_RECEPT_MUTEX,sems->patient_receptionist->mutex);
+
+    semaphore_destroy(STR_SEM_RECEPT_DOCTOR_FULL,sems->receptionist_doctor->full);
+    semaphore_destroy(STR_SEM_RECEPT_DOCTOR_EMPTY,sems->receptionist_doctor->empty);
+    semaphore_destroy(STR_SEM_RECEPT_DOCTOR_MUTEX,sems->receptionist_doctor->mutex);
+
+    semaphore_destroy(STR_SEM_PATIENT_STATS_MUTEX,sems->patient_stats_mutex);
+    semaphore_destroy(STR_SEM_RECEPT_STATS_MUTEX,sems->receptionist_stats_mutex);
+    semaphore_destroy(STR_SHM_DOCTOR_STATS,sems->doctor_stats_mutex);
+    semaphore_destroy(STR_SEM_RESULTS_MUTEX,sems->results_mutex);
+    semaphore_destroy(STR_SEM_TERMINATE_MUTEX,sems->terminate_mutex);
+}
+
 void destroy_memory_buffers(struct data_container* data, struct communication* comm){
     //dealocar memOria dinAmica
     deallocate_dynamic_memory(data->patient_pids);
@@ -398,6 +424,7 @@ void destroy_memory_buffers(struct data_container* data, struct communication* c
     destroy_shared_memory(STR_SHM_TERMINATE, data->terminate, sizeof(int));
 }
 
+
 int main(int argc, char *argv[]) {
     //init data structures
     struct data_container* data = allocate_dynamic_memory(sizeof(struct data_container));
@@ -405,13 +432,20 @@ int main(int argc, char *argv[]) {
     comm->main_patient = allocate_dynamic_memory(sizeof(struct circular_buffer));
     comm->patient_receptionist = allocate_dynamic_memory(sizeof(struct rnd_access_buffer));
     comm->receptionist_doctor = allocate_dynamic_memory(sizeof(struct circular_buffer));
+
+    // init semaphore data structure
+    struct semaphores* sems = create_dynamic_memory(sizeof(struct semaphores));
+    sems->main_patient = create_dynamic_memory(sizeof(struct prodcons));
+    sems-> patient_receptionist = create_dynamic_memory(sizeof(struct prodcons));
+    sems-> receptionist_doctor = create_dynamic_memory(sizeof(struct prodcons));
     
     //execute main code
     main_args(argc, argv, data);
     allocate_dynamic_memory_buffers(data);
     create_shared_memory_buffers(data, comm);
-    launch_processes(data, comm);
-    user_interaction(data, comm);
+    create_semaphores(data, sems);
+    launch_processes(data,comm,sems);
+    user_interaction(data, comm,sems);
     
     //release memory before terminating
     deallocate_dynamic_memory(data);
@@ -419,4 +453,8 @@ int main(int argc, char *argv[]) {
     deallocate_dynamic_memory(comm->patient_receptionist);
     deallocate_dynamic_memory(comm->receptionist_doctor);
     deallocate_dynamic_memory(comm);
+    destroy_dynamic_memory(sems->main_patient);
+    destroy_dynamic_memory(sems-> patient_receptionist);
+    destroy_dynamic_memory(sems-> receptionist_doctor);
+    destroy_dynamic_memory(sems);
 }

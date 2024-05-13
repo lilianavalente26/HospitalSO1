@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <doctor.h>
 
-
 int count_doctor_stats(struct data_container* data) {
     int count = 0;
 
@@ -19,19 +18,19 @@ int count_doctor_stats(struct data_container* data) {
     return count;
 }
 
-int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm){
+int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
-
+    
     while (data->terminate == 0){
-        doctor_receive_admission(newAd, doctor_id, data,comm);
+        doctor_receive_admission(newAd, doctor_id, data,comm,sems);
         if(newAd->id !=-1){
-            doctor_process_admission(newAd,doctor_id,data);
+            doctor_process_admission(newAd,doctor_id,data,sems);
         }
     }
     return count_doctor_stats(data); //numero de consultas realizadas
 }
 
-void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_container* data, struct communication* comm){
+void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     if (*data->terminate == 1) {
         return; // ja nao ha mais admissoes spara admitir
     }
@@ -40,7 +39,7 @@ void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_c
     }
 }
 
-void doctor_process_admission(struct admission* ad, int doctor_id, struct data_container* data){
+void doctor_process_admission(struct admission* ad, int doctor_id, struct data_container* data, struct semaphores* sems){
     //AlteraCAo do receiving_doctor
     ad->receiving_doctor = doctor_id;
     

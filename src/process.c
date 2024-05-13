@@ -11,13 +11,14 @@
 #include "../include/patient.h"
 #include "../include/receptionist.h"
 #include "../include/doctor.h"
+#include "../include/synchronization.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-int launch_patient(int patient_id, struct data_container* data, struct communication* comm){
+int launch_patient(int patient_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
@@ -26,7 +27,7 @@ int launch_patient(int patient_id, struct data_container* data, struct communica
     }
 
     if (pid == 0) { /* Processo filho */
-        execute_patient(patient_id, data, comm);
+        execute_patient(patient_id, data, comm,sems);
         exit(0);
     }
 
@@ -35,7 +36,7 @@ int launch_patient(int patient_id, struct data_container* data, struct communica
     }
 }
 
-int launch_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
+int launch_receptionist(int receptionist_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
@@ -44,7 +45,7 @@ int launch_receptionist(int receptionist_id, struct data_container* data, struct
     }
 
     if (pid == 0) { /* Processo filho */
-        execute_receptionist(receptionist_id, data, comm);
+        execute_receptionist(receptionist_id, data, comm,sems);
         exit(0);
     }
 
@@ -53,7 +54,7 @@ int launch_receptionist(int receptionist_id, struct data_container* data, struct
     }
 }
 
-int launch_doctor(int doctor_id, struct data_container* data, struct communication* comm){
+int launch_doctor(int doctor_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     int pid = fork();
 
     if (pid == -1) { /* Houve algum erro */
@@ -62,7 +63,7 @@ int launch_doctor(int doctor_id, struct data_container* data, struct communicati
     }
 
     if (pid == 0) { /* Processo filho */
-        execute_doctor(doctor_id, data, comm);
+        execute_doctor(doctor_id, data, comm,sems);
         exit(0);
     }
 
