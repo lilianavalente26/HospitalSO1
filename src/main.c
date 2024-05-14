@@ -35,7 +35,7 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
     comm->main_patient->ptrs = create_shared_memory(STR_SHM_MAIN_PATIENT_PTR, sizeof(struct pointers));
     comm->main_patient->buffer = create_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, data->buffers_size * sizeof(struct admission));
 
-    comm->patient_receptionist->ptrs = create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->n_patients * sizeof(int));
+    comm->patient_receptionist->ptrs = create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->buffers_size * sizeof(int));
     comm->patient_receptionist->buffer = create_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, data->buffers_size * sizeof(struct admission));
 
     comm->receptionist_doctor->ptrs = create_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, sizeof(struct pointers));
@@ -48,7 +48,7 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
     data->results = create_shared_memory(STR_SHM_RESULTS, MAX_RESULTS * sizeof(struct admission));
 
     data->terminate = create_shared_memory(STR_SHM_TERMINATE, sizeof(int));
-    *data->terminate = 0; 
+    *data->terminate = 0;  
 }
 
 void launch_processes(struct data_container* data, struct communication* comm, struct semaphores* sems) {
@@ -66,20 +66,9 @@ void launch_processes(struct data_container* data, struct communication* comm, s
     }
 }
 
-int count_patient_stats1(struct data_container* data) {
-    int count = 0;
-
-    for (int i = 0; i < data->n_patients; i++) {
-        count += data->patient_stats[i];
-    }
-
-    return count;
-}
-
 void user_interaction(struct data_container* data, struct communication* comm, struct semaphores* sems) {
     char input[20]; 
     int ad_counter = 0;
-    printf("%d", count_patient_stats1(data));
     while (*data->terminate != 1)
     {
         printf(">Introduza um dos 5 comandos: ad (paciente) (mEdico), info, help, status, end):");
@@ -167,7 +156,7 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
 }
 
 void create_request(int* ad_counter, struct data_container* data, struct communication* comm, struct semaphores* sems) {
-    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    struct admission newAd;
     int patient_id = 0;
     int doctor_id = 0;
 
@@ -176,24 +165,18 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     printf("Insira id do medico pretendido: ");
     doctor_id = IDCheckerDoctor(doctor_id, data);
 
-    newAd->id = *ad_counter;
-    newAd->requesting_patient = patient_id;
-    newAd->requested_doctor = doctor_id;
-    newAd->receiving_patient = -1;
-    newAd->receiving_receptionist = -1;
-    newAd->receiving_doctor = -1;
-    newAd->status = 'M';
+    newAd.id = *ad_counter;
+    newAd.requesting_patient = patient_id;
+    newAd.requested_doctor = doctor_id;
+    newAd.receiving_patient = -1;
+    newAd.receiving_receptionist = -1;
+    newAd.receiving_doctor = -1;
+    newAd.status = 'M';
 
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: %d\n", newAd->id);
-    data->results[newAd->id] = *newAd;
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
+    printf("O id da nova admissao eh: %d\n", newAd.id);
+    data->results[newAd.id] = newAd;
     *ad_counter += 1;
-    /**patient_receive_admission(newAd,patient_id,data,comm);
-    patient_send_admission(newAd,data,comm);
-    receptionist_receive_admission(newAd,data,comm);
-    receptionist_send_admission(newAd,data,comm);
-    doctor_receive_admission(newAd,doctor_id,data,comm);
-    */
 }
 
 void read_info(struct data_container* data, struct semaphores* sems){
@@ -379,12 +362,8 @@ void create_semaphores(struct data_container *data, struct semaphores *sems){
 }
 
 void wakeup_processes(struct data_container *data, struct semaphores *sems){
-    for (int i=0; i<sems->main_patient;i<3){
-        sem_post(sems->main_patient->empty);
-    }
+    //sem_post(sems->main_patient->empty);
     produce_end(sems->main_patient);
-
-    
     produce_end(sems->patient_receptionist);
     produce_end(sems->receptionist_doctor);
 

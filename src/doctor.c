@@ -45,17 +45,16 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
     
     //VariAveis
     int *docStats = data->doctor_stats;
-    char *adStatus = &ad->status;
 
     //Verifica se existe espaCo para a admission
     //Caso tenha espaCo
     if (ad->id < data->max_ads) {
         docStats[doctor_id]++;
-        *adStatus = 'A';
+        ad->status = 'A';
     }
     //Caso nAo tenha espaCo
     else {
-        *adStatus = 'N';
+        ad->status = 'N';
     }
     //Atualizar a admission no data
     data->results[ad->id] = *ad;
