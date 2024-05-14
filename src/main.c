@@ -379,7 +379,12 @@ void create_semaphores(struct data_container *data, struct semaphores *sems){
 }
 
 void wakeup_processes(struct data_container *data, struct semaphores *sems){
+    for (int i=0; i<sems->main_patient;i<3){
+        sem_post(sems->main_patient->empty);
+    }
     produce_end(sems->main_patient);
+
+    
     produce_end(sems->patient_receptionist);
     produce_end(sems->receptionist_doctor);
 

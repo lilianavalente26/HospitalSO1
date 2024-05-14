@@ -21,7 +21,7 @@ int count_doctor_stats(struct data_container* data) {
 int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
     
-    while (data->terminate == 0){
+    while (*data->terminate == 0){
         doctor_receive_admission(newAd, doctor_id, data,comm,sems);
         if(newAd->id !=-1){
             doctor_process_admission(newAd,doctor_id,data,sems);
@@ -49,7 +49,7 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
 
     //Verifica se existe espaCo para a admission
     //Caso tenha espaCo
-    if (*docStats < data->max_ads) {
+    if (ad->id < data->max_ads) {
         docStats[doctor_id]++;
         *adStatus = 'A';
     }

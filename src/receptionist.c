@@ -24,7 +24,7 @@ int count_receptionist_stats(struct data_container* data) {
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
     struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
 
-    while (data->terminate == 0){
+    while (*data->terminate == 0){
         receptionist_receive_admission(newAd,data,comm,sems);
         if(newAd->id !=-1){
             receptionist_process_admission(newAd, receptionist_id,data,sems);

@@ -98,18 +98,13 @@ void write_receptionist_doctor_buffer(struct circular_buffer* buffer, int buffer
 }
 
 void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, int buffer_size, struct admission* ad){
-    int read = 0;
-    //Itera pelo ads contidos no buffer
-    if (((buffer->ptrs->out)+1) % buffer_size != buffer->ptrs->in){
-        //Verifica se ad foi pedida pelo paciente
-        if (buffer->buffer[buffer->ptrs->out].requesting_patient == patient_id) {
-            *ad = buffer->buffer[buffer->ptrs->out];
-            read = 1;
-        }
+    //Verifica se ad foi pedida pelo paciente
+    if (buffer->ptrs->in != buffer->ptrs->out && buffer->buffer[buffer->ptrs->out].requesting_patient == patient_id) {
+        *ad = buffer->buffer[buffer->ptrs->out];
         buffer->ptrs->out = buffer->ptrs->out+1 % buffer_size;
     }
     //Caso nAo tenha lido uma ad disponIvel
-    if (read == 0) {
+    else {
         ad->id = -1;
     }
 }
@@ -135,18 +130,14 @@ void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buff
 }
 
 void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_id, int buffer_size, struct admission* ad){
-    int read = 0;
     //Itera pelo ads contidos no buffer
-    while ((buffer->ptrs->out+1) % buffer_size != buffer->ptrs->in){
-        //Verifica se o doutor foi pedido
-        if (buffer->buffer[buffer->ptrs->out].requested_doctor == doctor_id) {
-            *ad = buffer->buffer[buffer->ptrs->out];
-            read = 1;
-        }
+    //Verifica se o doutor foi pedido
+    if (buffer->ptrs->in != buffer->ptrs->out && buffer->buffer[buffer->ptrs->out].requested_doctor == doctor_id) {
+        *ad = buffer->buffer[buffer->ptrs->out];
         buffer->ptrs->out = buffer->ptrs->out+1 % buffer_size;
     }
     //Caso nAo tenha lido uma ad disponIvel
-    if (read == 0) {
+    else {
         ad->id = -1;
     }
 }
