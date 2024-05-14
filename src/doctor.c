@@ -20,12 +20,13 @@ int count_doctor_stats(struct data_container* data) {
 }
 
 int execute_doctor(int doctor_id, struct data_container* data, struct communication* comm){
-    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    struct admission newAd;
 
     while (data->terminate == 0){
-        doctor_receive_admission(newAd, doctor_id, data,comm);
-        if(newAd->id !=-1){
-            doctor_process_admission(newAd,doctor_id,data);
+        doctor_receive_admission(&newAd, doctor_id, data,comm);
+        printf("%d \n",newAd.id);
+        if(newAd.id !=-1){
+            doctor_process_admission(&newAd,doctor_id,data);
         }
     }
     return count_doctor_stats(data); //numero de consultas realizadas

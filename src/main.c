@@ -63,10 +63,12 @@ void launch_processes(struct data_container* data, struct communication* comm) {
         data->patient_pids[i] = launch_patient(i,data,comm);
     }
     //DA launch a cada recepcionist
+    printf("receptionist corre");
     for (int i = 0; i < data->n_receptionists; i++) {
         data->receptionist_pids[i] = launch_receptionist(i,data,comm);
     }
     //DA launch a cada doctor
+    printf("doctor corre");
     for (int i = 0; i < data->n_doctors; i++) {
         data->doctor_pids[i] = launch_doctor(i,data,comm);
     }
@@ -173,7 +175,7 @@ int IDCheckerDoctor(int doctor_id, struct data_container* data) {
 }
 
 void create_request(int* ad_counter, struct data_container* data, struct communication* comm) {
-    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    struct admission newAd;
     int patient_id = 0;
     int doctor_id = 0;
 
@@ -182,24 +184,19 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     printf("Insira id do medico pretendido: ");
     doctor_id = IDCheckerDoctor(doctor_id, data);
 
-    newAd->id = *ad_counter;
-    newAd->requesting_patient = patient_id;
-    newAd->requested_doctor = doctor_id;
-    newAd->receiving_patient = -1;
-    newAd->receiving_receptionist = -1;
-    newAd->receiving_doctor = -1;
-    newAd->status = 'M';
+    newAd.id = *ad_counter;
+    newAd.requesting_patient = patient_id;
+    newAd.requested_doctor = doctor_id;
+    newAd.receiving_patient = -1;
+    newAd.receiving_receptionist = -1;
+    newAd.receiving_doctor = -1;
+    newAd.status = 'M';
 
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, newAd);
-    printf("O id da nova admissao eh: %d\n", newAd->id);
-    data->results[newAd->id] = *newAd;
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
+    printf("O id da nova admissao eh: %d\n", newAd.id);
+    data->results[newAd.id] = newAd;
     *ad_counter += 1;
-    /**patient_receive_admission(newAd,patient_id,data,comm);
-    patient_send_admission(newAd,data,comm);
-    receptionist_receive_admission(newAd,data,comm);
-    receptionist_send_admission(newAd,data,comm);
-    doctor_receive_admission(newAd,doctor_id,data,comm);
-    */
+    
 }
 
 void read_info(struct data_container* data){

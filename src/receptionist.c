@@ -10,6 +10,8 @@
 #include "receptionist.h"
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
+
 
 int count_receptionist_stats(struct data_container* data) {
     int count = 0;
@@ -22,13 +24,14 @@ int count_receptionist_stats(struct data_container* data) {
 }
 
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
-    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    struct admission newAd;
 
     while (data->terminate == 0){
-        receptionist_receive_admission(newAd,data,comm);
-        if(newAd->id !=-1){
-            receptionist_process_admission(newAd, receptionist_id,data);
-            receptionist_send_admission(newAd,data,comm);        
+        receptionist_receive_admission(&newAd,data,comm);
+        printf("%d \n",newAd.id);
+        if(newAd.id !=-1){
+            receptionist_process_admission(&newAd, receptionist_id,data);
+            receptionist_send_admission(&newAd,data,comm);        
         }
     }
     return count_receptionist_stats(data); //numero de admissoes realizadas

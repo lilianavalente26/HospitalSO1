@@ -21,13 +21,13 @@ int count_patient_stats(struct data_container* data) {
 }
 
 int execute_patient(int patient_id, struct data_container* data, struct communication* comm){
-    struct admission *newAd = allocate_dynamic_memory(sizeof(struct admission));
+    struct admission newAd;
     
     while (*data->terminate == 0){
-        patient_receive_admission(newAd, patient_id, data,comm);
-        if(newAd->id != -1){
-            patient_process_admission(newAd,patient_id,data);
-            patient_send_admission(newAd,data,comm);        
+        patient_receive_admission(&newAd, patient_id, data,comm);
+        if(newAd.id != -1){
+            patient_process_admission(&newAd,patient_id,data);
+            patient_send_admission(&newAd,data,comm);        
         }
     }
     return count_patient_stats(data); //numero de admissoes pedidas
