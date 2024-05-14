@@ -41,7 +41,7 @@ void create_shared_memory_buffers(struct data_container* data, struct communicat
     comm->main_patient->ptrs = create_shared_memory(STR_SHM_MAIN_PATIENT_PTR, sizeof(struct pointers));
     comm->main_patient->buffer = create_shared_memory(STR_SHM_MAIN_PATIENT_BUFFER, data->buffers_size * sizeof(struct admission));
 
-    comm->patient_receptionist->ptrs = create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->n_patients * sizeof(int));
+    comm->patient_receptionist->ptrs = create_shared_memory(STR_SHM_PATIENT_RECEPT_PTR, data->buffers_size * sizeof(int));
     comm->patient_receptionist->buffer = create_shared_memory(STR_SHM_PATIENT_RECEPT_BUFFER, data->buffers_size * sizeof(struct admission));
 
     comm->receptionist_doctor->ptrs = create_shared_memory(STR_SHM_RECEPT_DOCTOR_PTR, sizeof(struct pointers));
@@ -63,31 +63,19 @@ void launch_processes(struct data_container* data, struct communication* comm) {
         data->patient_pids[i] = launch_patient(i,data,comm);
     }
     //DA launch a cada recepcionist
-    printf("receptionist corre");
     for (int i = 0; i < data->n_receptionists; i++) {
         data->receptionist_pids[i] = launch_receptionist(i,data,comm);
     }
     //DA launch a cada doctor
-    printf("doctor corre");
     for (int i = 0; i < data->n_doctors; i++) {
         data->doctor_pids[i] = launch_doctor(i,data,comm);
     }
 }
 
-int count_patient_stats1(struct data_container* data) {
-    int count = 0;
-
-    for (int i = 0; i < data->n_patients; i++) {
-        count += data->patient_stats[i];
-    }
-
-    return count;
-}
 
 void user_interaction(struct data_container* data, struct communication* comm) {
     char input[20]; 
     int ad_counter = 0;
-    printf("%d", count_patient_stats1(data));
     while (*data->terminate != 1)
     {
         printf(">Introduza um dos 5 comandos: ad (paciente) (mEdico), info, help, status, end):");
@@ -302,21 +290,6 @@ void print_data_results(struct data_container* data) {
             printf("%d,", data->results[i].id);
         }
     }
-    /*
-    int j = 0;
-    while (data->results[j].id != -1){
-        if (j == 0) {
-            printf("[%d,", data->results[j].id);
-        }
-        else if (data->results[j+1].id == -1){
-            printf("%d,", data->results[j].id);
-        }
-        else{
-            printf("%d]", data->results[j].id);
-        }
-        j++;
-    }
-    */
     printf("\n");
 }
 

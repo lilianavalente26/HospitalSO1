@@ -14,9 +14,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 void* create_shared_memory(char* name, int size){
-    int shm = shm_open(name, O_CREAT | O_RDWR , 0666);
+    int shm = shm_open(name, O_CREAT | O_RDWR , S_IRUSR | S_IWUSR);
     ftruncate(shm, size); 
     if(shm == -1){
         perror ("create_shared_memory_1");
@@ -29,7 +30,7 @@ void* create_shared_memory(char* name, int size){
         perror("create_shared_memory_2");
         exit(1);
     }
-
+    memset(ptrSharedMemory,0,size);
     return ptrSharedMemory;
 }
 
@@ -78,7 +79,7 @@ void write_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buf
     /* Itera pelo buffer, procurando pelas posiCOes vazias
     *  Verifica se Já escreveu ou se ultrapassou o buffer_size
     */
-    while (written != 1 || i+1 <= buffer_size) {
+    while (written != 1 && i+1 <= buffer_size) {
         //Verifica se a position estA livre
         if (buffer->ptrs[i] == 0){
             buffer->buffer[i] = *ad;
@@ -111,31 +112,27 @@ void read_main_patient_buffer(struct circular_buffer* buffer, int patient_id, in
 
 void read_patient_receptionist_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct admission* ad){
     int i = 0;
-    int read = 0;
     /* Itera pelo buffer, procurando pelas posiCOes vazias
     *  Verifica se Já escreveu ou se ultrapassou o buffer_size
     */
-    while (read != 1 || i < buffer_size) {
+    while (i < buffer_size) {
         //Verifica se a position estA livre
-        if (buffer->ptrs[i] == 1){
+        if (buffer->ptrs[i] == 1){           
             *ad = buffer->buffer[i];
             buffer->ptrs[i] = 0;
-            read = 1;
+            return;
         }
         i++;
     }
-
-    if (read == 0) {
-        ad->id = -1;
-    }
+    ad->id = -1;
 }
 
 void read_receptionist_doctor_buffer(struct circular_buffer* buffer, int doctor_id, int buffer_size, struct admission* ad){
     //Itera pelo ads contidos no buffer
-        //Verifica se o doutor foi pedido
+    //Verifica se o doutor foi pedido
     if (buffer->ptrs->in != buffer->ptrs->out && buffer->buffer[buffer->ptrs->out].requested_doctor == doctor_id) {
         *ad = buffer->buffer[buffer->ptrs->out];
-        buffer->ptrs->out = buffer->ptrs->out+1 % buffer_size;
+        buffer->ptrs->out = (buffer->ptrs->out+1) % buffer_size;
     }
     //Caso nAo tenha lido uma ad disponIvel
     else {

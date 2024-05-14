@@ -26,10 +26,10 @@ int count_receptionist_stats(struct data_container* data) {
 int execute_receptionist(int receptionist_id, struct data_container* data, struct communication* comm){
     struct admission newAd;
 
-    while (data->terminate == 0){
+    while (*data->terminate == 0){
         receptionist_receive_admission(&newAd,data,comm);
-        printf("%d \n",newAd.id);
         if(newAd.id !=-1){
+            //fprintf(stderr,"%d id !\n",newAd.id);
             receptionist_process_admission(&newAd, receptionist_id,data);
             receptionist_send_admission(&newAd,data,comm);        
         }
@@ -44,6 +44,7 @@ void receptionist_receive_admission(struct admission* ad, struct data_container*
     } 
     //Escolhe um receptionist aleatOrio para receber a admission
     else {    
+        //printf("%d buffersize= \n",data->buffers_size);
         read_patient_receptionist_buffer(comm->patient_receptionist,data->buffers_size,ad);
     }
 }
