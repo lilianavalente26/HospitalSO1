@@ -89,7 +89,7 @@ void user_interaction(struct data_container* data, struct communication* comm, s
             end_execution(data, comm,sems);
             exit(0);
         }
-        else if(strcmp(input,"ad") == 0){;
+        else if(strcmp(input,"ad") == 0){
             create_request(&ad_counter, data, comm,sems);
         }
         else if(strcmp(input,"status")==0){
