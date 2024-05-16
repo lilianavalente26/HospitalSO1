@@ -8,7 +8,7 @@
  * Função que imprime o estado atual de todas as admissões, incluindo as que já foram finalizadas
  * pelos médicos e as que ainda estão em andamento.
 */
-void print_admission_status(struct data_container* data, struct communication* comm, struct semaphores* sems);
+void print_admission_status(struct data_container* data, struct semaphores* sems);
 
 /*
  * Função que interrompe a execução do programa, ao capturar o sinal de interrupção do programa 

@@ -24,6 +24,7 @@ void configArgs(int argc, char* argv[], struct data_container* data) {
     data->n_patients = atoi(argv[3]);
     data->n_receptionists = atoi(argv[4]);
     data->n_doctors = atoi(argv[5]);
-    
+    //data->log_filename = atoi(argv[6]);
+    //data->statistics_filename = atoi(argv[7]);
     data->alarm_time = atoi(argv[8]);
 }

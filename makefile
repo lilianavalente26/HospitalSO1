@@ -14,6 +14,7 @@ INCLUDE_DIR = include
 EXEC_NAME = HospitalSO
 
 OBJS = main.o memory.o process.o receptionist.o patient.o doctor.o
+		configuration.o hosptime.o hospsignal.o stats.o log.o synchronization.o
 
 main.o = main.h
 memory.o = memory.h
@@ -21,6 +22,12 @@ process.o = process.h
 receptionist.o = receptionist.h
 patient.o = patient.h
 doctor.o = doctor.h
+configuration.o = configuration.h
+hosptime.o = hosptime.h
+hospsignal.o = hospsignal.h
+stats.o = stats.h 
+log.o = log.h 
+synchronization.o = synchronization.h
 
 vpath %.o $(OBJ_DIR)
 vpath %.c $(SRC_DIR)
