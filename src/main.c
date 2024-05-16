@@ -20,7 +20,13 @@
 #include <string.h>
 
 void main_args(int argc, char* argv[], struct data_container* data) {
-    configArgs(argc, argv, data);
+    if (argc != 2) {
+        perror("NUmero de argumentos inválidos");
+        exit(1);
+    }
+    FILE *config_text = fopen(argv[1],'r');
+    config_args(config_text,data);
+    fclose(config_text);
 }
 
 
@@ -358,7 +364,7 @@ void create_semaphores(struct data_container *data, struct semaphores *sems){
     semaphore_create(STR_SEM_RECEPT_STATS_MUTEX,data->n_receptionists);
     semaphore_create(STR_SHM_DOCTOR_STATS,data->n_doctors);
     semaphore_create(STR_SEM_RESULTS_MUTEX,MAX_RESULTS);
-    semaphore_create(STR_SEM_TERMINATE_MUTEX,data->terminate);    
+    semaphore_create(STR_SEM_TERMINATE_MUTEX,*data->terminate);    
 }
 
 void wakeup_processes(struct data_container *data, struct semaphores *sems){

@@ -13,8 +13,7 @@ INCLUDE_DIR = include
 
 EXEC_NAME = HospitalSO
 
-OBJS = main.o memory.o process.o receptionist.o patient.o doctor.o
-		configuration.o hosptime.o hospsignal.o stats.o log.o synchronization.o
+OBJS = main.o memory.o process.o receptionist.o patient.o doctor.o configuration.o hosptime.o hospsignal.o stats.o log.o synchronization.o
 
 main.o = main.h
 memory.o = memory.h

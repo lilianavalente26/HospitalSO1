@@ -14,17 +14,25 @@
 #include <string.h>
 #include <stdio.h>
 
-void configArgs(int argc, char* argv[], struct data_container* data) {
-    if (argc != 9) {
-        perror("NUmero de argumentos inválidos");
-        exit(1);
-    }
-    data->max_ads = atoi(argv[1]);
-    data->buffers_size = atoi(argv[2]);
-    data->n_patients = atoi(argv[3]);
-    data->n_receptionists = atoi(argv[4]);
-    data->n_doctors = atoi(argv[5]);
-    //data->log_filename = atoi(argv[6]);
-    //data->statistics_filename = atoi(argv[7]);
-    data->alarm_time = atoi(argv[8]);
+void config_args(FILE* config_text, struct data_container* data) {
+    int maxChar = 256;
+    char max_ads, buffers_size, n_patients, n_receptionists, n_doctors, alarm_time;
+
+    // Guardar cada linha numa variAvel
+    fgets(&max_ads,maxChar,config_text);
+    fgets(&buffers_size,maxChar,config_text);
+    fgets(&n_patients,maxChar,config_text);
+    fgets(&n_receptionists,maxChar,config_text);
+    fgets(&n_doctors,maxChar,config_text);
+    fgets(data->log_filename,maxChar,config_text);
+    fgets(data->statistics_filename,maxChar,config_text);
+    fgets(&alarm_time,maxChar,config_text);
+
+    // Transformar a variAvel para o tipo certo
+    data->max_ads = atoi(&max_ads);
+    data->buffers_size = atoi(&buffers_size);
+    data->n_patients = atoi(&n_patients);
+    data->n_receptionists = atoi(&n_receptionists);
+    data->n_doctors = atoi(&n_doctors);
+    data->alarm_time = atoi(&alarm_time);
 }

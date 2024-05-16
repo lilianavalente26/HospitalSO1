@@ -12,7 +12,7 @@
 
 int get_current_time(struct timespec *time){
     if(clock_gettime(CLOCK_REALTIME, time) == -1){
-        print("Erro no get_current_time");
+        printf("Erro no get_current_time");
         return -1;
     }
     return clock_gettime(CLOCK_REALTIME, time);
