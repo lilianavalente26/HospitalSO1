@@ -27,7 +27,7 @@ void config_args(FILE* config_text, struct data_container* data) {
     fgets(data->log_filename,maxChar,config_text);
     fgets(data->statistics_filename,maxChar,config_text);
     fgets(&alarm_time,maxChar,config_text);
-
+    
     // Transformar a variAvel para o tipo certo
     data->max_ads = atoi(&max_ads);
     data->buffers_size = atoi(&buffers_size);

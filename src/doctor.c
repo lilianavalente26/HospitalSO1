@@ -35,11 +35,16 @@ void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_c
         return; // ja nao ha mais admissoes spara admitir
     }
     else{
+        consume_begin(sems->receptionist_doctor);
+
         read_receptionist_doctor_buffer(comm->receptionist_doctor, doctor_id, data->buffers_size, ad);
+
+        consume_end(sems->receptionist_doctor);
     }
 }
 
 void doctor_process_admission(struct admission* ad, int doctor_id, struct data_container* data, struct semaphores* sems){
+    produce_begin(sems->receptionist_doctor);
     //AlteraCAo do receiving_doctor
     ad->receiving_doctor = doctor_id;
     
@@ -49,13 +54,20 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
     //Verifica se existe espaCo para a admission
     //Caso tenha espaCo
     if (ad->id < data->max_ads) {
-        docStats[doctor_id]++;
         ad->status = 'A';
+
+        semaphore_lock(sems->doctor_stats_mutex);
+        docStats[doctor_id]++;
+        semaphore_unlock(sems->doctor_stats_mutex);
+
+        produce_end(sems->receptionist_doctor);
     }
     //Caso nAo tenha espaCo
     else {
         ad->status = 'N';
     }
     //Atualizar a admission no data
+    semaphore_lock(sems->results_mutex);
     data->results[ad->id] = *ad;
+    semaphore_unlock(sems->results_mutex);
 }

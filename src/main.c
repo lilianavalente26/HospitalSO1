@@ -312,6 +312,7 @@ void end_execution(struct data_container* data, struct communication* comm, stru
     wait_processes(data);
     write_statistics(data);
     destroy_memory_buffers(data,comm);
+    destroy_semaphores(sems);
 }
 
 void wait_processes(struct data_container* data) {
@@ -332,18 +333,8 @@ void wait_processes(struct data_container* data) {
 void write_statistics(struct data_container* data){
     //verifica-se a flag terminate esta a 1, o que indica que o programa ja terminou
     if(*data->terminate == 1){
-        for (int i = 0; i < data->n_patients; i++)
-        {
-            printf("O numero de admissoes solicitadas pelo paciente %d, corresponde a %d\n",i, data->patient_stats[i]);
-        }
-        for (int i = 0; i < data->n_receptionists; i++)
-        {
-            printf("O numero de admissoes realizadas pelo rececionista %d, corresponde a %d\n",i, data->receptionist_stats[i]);
-        }
-        for (int i = 0; i < data->n_doctors; i++)
-        {
-            printf("O numero de admissoes atendidas pelo medico %d, corresponde a %d\n",i, data->doctor_stats[i]);
-        }
+        printf("%d\n",data->n_receptionists);
+        
     }
 }
 
