@@ -41,7 +41,6 @@ void semaphore_destroy(char* name, sem_t* semaphore) {
 * corretos da estrutura passada em argumento.
 */
 void produce_begin(struct prodcons* pc) {
-    sem_wait(pc->full);
     sem_wait(pc->empty);
     sem_wait(pc->mutex);
 }
@@ -50,23 +49,24 @@ void produce_begin(struct prodcons* pc) {
 * corretos da estrutura passada em argumento.
 */
 void produce_end(struct prodcons* pc) {
-    sem_post(pc->full);
-    sem_post(pc->empty);
     sem_post(pc->mutex);
+    sem_post(pc->full);
 }
 
 /* Função que inicia o processo de consumir, fazendo sem_wait nos semáforos
 * corretos da estrutura passada em argumento.
 */
 void consume_begin(struct prodcons* pc) {
-
+    sem_wait(pc->full);
+    sem_wait(pc->mutex);
 }
 
 /* Função que termina o processo de consumir, fazendo sem_post nos semáforos
 * corretos da estrutura passada em argumento.
 */
 void consume_end(struct prodcons* pc) {
-
+    sem_post(pc->mutex);
+    sem_post(pc->empty);
 }
 
 /* Função que faz wait a um semáforo.

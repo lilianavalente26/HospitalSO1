@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <linux/time.h>
 
 char format_time(struct timespec time){
     // Obtém o timestamp atual

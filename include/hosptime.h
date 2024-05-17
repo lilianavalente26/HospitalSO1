@@ -1,7 +1,7 @@
 #ifndef HOSPTIME_H
 #define HOSPTIME_H
 
-#include <linux/time.h>
+#include <time.h>
 /*
  * Funcao que retorna o instante temporal que foi invocada
 */
