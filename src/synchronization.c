@@ -70,11 +70,15 @@ void consume_end(struct prodcons* pc) {
 /* Função que faz wait a um semáforo.
 */
 void semaphore_lock(sem_t* sem) {
-    sem_wait(sem);
+    if (sem_wait(sem) == -1){
+        perror("sem_wait");
+    }
 }
 
 /* Função que faz post a um semáforo.
 */
 void semaphore_unlock(sem_t* sem) {
-    sem_post(sem);
+    if (sem_post(sem) == -1){
+        perror("sem_post");
+    }
 }

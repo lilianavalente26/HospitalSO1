@@ -15,8 +15,7 @@ void log_create(struct data_container* data){
     if (log_file == NULL) {
         printf("Erro ao abrir o arquivo de log.\n");
         return;
-    }
-    fprintf(log_file,"inicio do log file\n");
+    }    
     fclose(log_file);
 }
 
