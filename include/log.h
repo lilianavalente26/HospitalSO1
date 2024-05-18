@@ -4,9 +4,15 @@
 * Liliana Valente - fc59846
 */
 
+#include "main.h"
+#include "synchronization.h"
+
 #ifndef LOG_H_GUARD
 #define LOG_H_GUARD
 
-
+/*
+* Função que guarda num ficheiro a informacao sobre as operacoes realizadas
+*/
+void log_update(struct data_container* data, char* input, int* arguments);
 
 #endif

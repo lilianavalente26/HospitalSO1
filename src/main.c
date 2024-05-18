@@ -12,6 +12,8 @@
 #include "process.h"
 #include "configuration.h"
 #include "synchronization.h"
+#include "stats.h"
+#include "log.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -21,9 +23,9 @@
 
 void main_args(int argc, char* argv[], struct data_container* data) {
     if (argc != 2) {
-        perror("NUmero de argumentos inválidos");
+        perror("NUmero de argumentos invAlidos");
         exit(1);
-    }
+    }   
     FILE *config_text = fopen(argv[1],"r");
     config_args(config_text,data);
     fclose(config_text);
@@ -73,6 +75,8 @@ void launch_processes(struct data_container* data, struct communication* comm, s
 }
 
 void user_interaction(struct data_container* data, struct communication* comm, struct semaphores* sems) {
+    // CriaCAo do ficheiro log
+    log_create(data);
     char input[20]; 
     int ad_counter = 0;
     while (*data->terminate != 1)
@@ -84,6 +88,7 @@ void user_interaction(struct data_container* data, struct communication* comm, s
             read_info(data,sems);
         }
         else if(strcmp(input,"help") == 0){
+            log_update(data,"help", NULL);
             printf("Pode introduzir somente as seguintes instrucOes: \n"
             "ad (paciente) (mEdico) - cria uma nova admissAo, atravEs da funcAo create_request\n"
             "info - estado de uma admissAo\n"
@@ -92,6 +97,7 @@ void user_interaction(struct data_container* data, struct communication* comm, s
             "status - dA o status da execuCAo\n");
         }
         else if(strcmp(input,"end") == 0){
+            log_update(data,"end", NULL);
             end_execution(data, comm,sems);
             exit(0);
         }
@@ -99,6 +105,7 @@ void user_interaction(struct data_container* data, struct communication* comm, s
             create_request(&ad_counter, data, comm,sems);
         }
         else if(strcmp(input,"status")==0){
+            log_update(data,"status", NULL);
             print_status(data,sems);
         }
         else{
@@ -170,6 +177,10 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     patient_id = IDCheckerPatient(patient_id, data);
     printf("Insira id do medico pretendido: ");
     doctor_id = IDCheckerDoctor(doctor_id, data);
+    int args[2];
+    args[0] = patient_id;
+    args[1] = doctor_id;
+    log_update(data,"ad",args);
 
     newAd.id = *ad_counter;
     newAd.requesting_patient = patient_id;
@@ -179,9 +190,16 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd.receiving_doctor = -1;
     newAd.status = 'M';
 
-    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
-    printf("O id da nova admissao eh: %d\n", newAd.id);
+    printf("create request1");
+    //semaphore_lock(sems->results_mutex);
     data->results[newAd.id] = newAd;
+    //semaphore_unlock(sems->results_mutex);
+    printf("create request2");
+    //produce_begin(sems->main_patient);
+    write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
+    //produce_end(sems->main_patient);
+    printf("O id da nova admissao eh: %d\n", newAd.id);
+    
     *ad_counter += 1;
 }
 
@@ -190,7 +208,7 @@ void read_info(struct data_container* data, struct semaphores* sems){
     int admission_id;
     printf(">Qual o id de admissao a consultar? ");
     scanf("%d", &admission_id);
-
+    log_update(data,"info", &admission_id);
     int i = 0;
     int found = 0;
     //Verifica se admission E vAlida
@@ -309,10 +327,11 @@ void print_status(struct data_container* data, struct semaphores* sems) {
 
 void end_execution(struct data_container* data, struct communication* comm, struct semaphores* sems){
     *data->terminate = 1;
+    //wakeup_processes(data,sems);
     wait_processes(data);
+    destroy_semaphores(sems);
     write_statistics(data);
     destroy_memory_buffers(data,comm);
-    destroy_semaphores(sems);
 }
 
 void wait_processes(struct data_container* data) {
@@ -333,8 +352,15 @@ void wait_processes(struct data_container* data) {
 void write_statistics(struct data_container* data){
     //verifica-se a flag terminate esta a 1, o que indica que o programa ja terminou
     if(*data->terminate == 1){
+        printf("%d\n",data->max_ads);
+        printf("%d\n",data->buffers_size);
+        printf("%d\n",data->n_patients);
         printf("%d\n",data->n_receptionists);
-        
+        printf("%d\n",data->n_doctors);
+        printf("%s\n",data->log_filename);
+        printf("%s\n",data->statistics_filename);
+        printf("%d\n",data->alarm_time);
+        print_stats(data); 
     }
 }
 
@@ -359,11 +385,13 @@ void create_semaphores(struct data_container *data, struct semaphores *sems){
 }
 
 void wakeup_processes(struct data_container *data, struct semaphores *sems){
-    //sem_post(sems->main_patient->empty);
-    produce_end(sems->main_patient);
-    produce_end(sems->patient_receptionist);
-    produce_end(sems->receptionist_doctor);
-
+    //produce_end(sems->main_patient);
+    for (int i = 0; i < data->n_patients; i++){
+        //produce_end(sems->patient_receptionist);
+    }
+    for (int i = 0; i < data->n_receptionists; i++){
+        //produce_end(sems->receptionist_doctor);
+    }
 }
 
 void destroy_semaphores(struct semaphores *sems){

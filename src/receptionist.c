@@ -50,25 +50,25 @@ void receptionist_receive_admission(struct admission* ad, struct data_container*
 }
 
 void receptionist_process_admission(struct admission* ad, int receptionist_id, struct data_container* data, struct semaphores* sems){
-    produce_begin(sems->patient_receptionist);
+    //produce_begin(sems->patient_receptionist);
     //Alterar os dados
     ad->receiving_receptionist = receptionist_id;
     ad->status = 'R';
+    //produce_end(sems->patient_receptionist);
 
-    semaphore_lock(sems->receptionist_stats_mutex);
+    //semaphore_lock(sems->receptionist_stats_mutex);
     data->receptionist_stats[receptionist_id]++;
-    semaphore_unlock(sems->receptionist_stats_mutex);
+    //semaphore_unlock(sems->receptionist_stats_mutex);
 
-    produce_end(sems->patient_receptionist);
 
     //Atualizar a admission no data
-    semaphore_lock(sems->results_mutex);
+    //semaphore_lock(sems->results_mutex);
     data->results[ad->id] = *ad;
-    semaphore_unlock(sems->results_mutex);
+    //semaphore_unlock(sems->results_mutex);
 }
 
 void receptionist_send_admission(struct admission* ad, struct data_container* data, struct communication* comm, struct semaphores* sems){
-    produce_begin(sems->receptionist_doctor);
+    //produce_begin(sems->receptionist_doctor);
     write_receptionist_doctor_buffer(comm->receptionist_doctor, data->buffers_size, ad);
-    produce_end(sems->receptionist_doctor);
+    //produce_end(sems->receptionist_doctor);
 }

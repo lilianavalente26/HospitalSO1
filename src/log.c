@@ -10,7 +10,17 @@
 #include <string.h>
 #include <time.h>
 
-void log_operation(struct data_container* data, const char input, const char arguments) {
+void log_create(struct data_container* data){
+    FILE *log_file = fopen(data->log_filename, "w");
+    if (log_file == NULL) {
+        printf("Erro ao abrir o arquivo de log.\n");
+        return;
+    }
+    fprintf(log_file,"inicio do log file\n");
+    fclose(log_file);
+}
+
+void log_update(struct data_container* data, char* input, int* arguments) {
     // Abre o arquivo de log especificado na estrutura data_container
     FILE *log_file = fopen(data->log_filename, "a");
     if (log_file == NULL) {
@@ -30,7 +40,14 @@ void log_operation(struct data_container* data, const char input, const char arg
              local_time->tm_hour, local_time->tm_min, local_time->tm_sec, current_time.tv_nsec / 1000000);
 
     // Escreve no arquivo de log
-    fprintf(log_file, "%s %s %s\n", timestamp, &input, &arguments);
-
+    if (strcmp(input, "ad") == 0) {
+        fprintf(log_file, "%s %s %d %d\n", timestamp, input, arguments[0], arguments[1]);
+    } 
+    else if (strcmp(input, "info") == 0) {
+        fprintf(log_file, "%s %s %d\n", timestamp, input, arguments[0]);
+    }
+    else {
+        fprintf(log_file, "%s %s\n", timestamp, input);
+    }
     fclose(log_file);
 }

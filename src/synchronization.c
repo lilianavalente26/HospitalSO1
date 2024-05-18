@@ -27,8 +27,6 @@ sem_t * semaphore_create(char* name, int value) {
 /* Função que destroi o semáforo passado em argumento.
 */
 void semaphore_destroy(char* name, sem_t* semaphore) {
-    sem_close(semaphore);
-    sem_unlink(name);
     if (sem_close(semaphore) == -1){
         perror("sem_close");
     }
