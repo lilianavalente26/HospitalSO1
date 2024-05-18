@@ -48,7 +48,7 @@ void print_stats(struct data_container* data){
     }
 
     fprintf(stats_file,"\nAdmission Statistics:\n");
-    time_t totalSecs;
+    long totalSecs;
     long totalNSecs;
     int i = 0;
     int finished = 0;
@@ -69,6 +69,10 @@ void print_stats(struct data_container* data){
         fprintf(stats_file,"Doctor time: %s\n",format_time(data->results[i].doctor_time));
         totalSecs = data->results[i].doctor_time.tv_sec - data->results[i].create_time.tv_sec;
         totalNSecs = (((data->results[i].doctor_time.tv_nsec - data->results[i].create_time.tv_nsec)/1000000)%1000);
+        printf("%ld\n",data->results[i].create_time.tv_sec);
+        printf("%ld\n",data->results[i].create_time.tv_nsec);
+        printf("%ld\n",data->results[i].doctor_time.tv_sec);
+        printf("%ld\n",data->results[i].doctor_time.tv_nsec);
         fprintf(stats_file,"Total time: %ld.%03ld\n\n",totalSecs,totalNSecs);
 
         i++;

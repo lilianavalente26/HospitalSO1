@@ -14,6 +14,7 @@
 #include "synchronization.h"
 #include "stats.h"
 #include "log.h"
+#include "hosptime.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -189,6 +190,7 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd.receiving_receptionist = -1;
     newAd.receiving_doctor = -1;
     newAd.status = 'M';
+    get_current_time(&newAd.create_time);
 
     printf("create request1");
 

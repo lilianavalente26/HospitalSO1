@@ -9,10 +9,9 @@
 #include <stdio.h>
 #include <time.h>
 
-int get_current_time(struct timespec *time){
+void get_current_time(struct timespec *time){
     if(clock_gettime(CLOCK_REALTIME, time) == -1){
         printf("Erro no get_current_time");
         return -1;
     }
-    return clock_gettime(CLOCK_REALTIME, time);
 }

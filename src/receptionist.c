@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "main.h"
 #include "receptionist.h"
+#include "hosptime.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -26,6 +27,7 @@ int execute_receptionist(int receptionist_id, struct data_container* data, struc
 
     while (*data->terminate == 0){
         receptionist_receive_admission(newAd,data,comm,sems);
+        get_current_time(&newAd->receptionist_time);
         if(newAd->id !=-1){
             receptionist_process_admission(newAd, receptionist_id,data,sems);
             receptionist_send_admission(newAd,data,comm,sems);        

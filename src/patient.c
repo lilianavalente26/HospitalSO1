@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "main.h"
 #include "patient.h"
+#include "hosptime.h"
 #include <stdio.h>
 
 int count_patient_stats(struct data_container* data) {
@@ -25,6 +26,7 @@ int execute_patient(int patient_id, struct data_container* data, struct communic
     
     while (*data->terminate == 0){
         patient_receive_admission(newAd, patient_id, data,comm,sems);
+        get_current_time(&newAd->patient_time);
         if(newAd->id != -1){
             patient_process_admission(newAd,patient_id,data,sems);
             patient_send_admission(newAd,data,comm,sems);        

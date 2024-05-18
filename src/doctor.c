@@ -5,8 +5,11 @@
 * Liliana Valente - fc59846
 */
 
+#include "memory.h"
+#include "main.h"
 #include <stdio.h>
-#include <doctor.h>
+#include "doctor.h"
+#include "hosptime.h"
 
 int count_doctor_stats(struct data_container* data) {
     int count = 0;
@@ -23,6 +26,7 @@ int execute_doctor(int doctor_id, struct data_container* data, struct communicat
     
     while (*data->terminate == 0){
         doctor_receive_admission(newAd, doctor_id, data,comm,sems);
+        get_current_time(&newAd->doctor_time);
         if(newAd->id !=-1){
             doctor_process_admission(newAd,doctor_id,data,sems);
         }
