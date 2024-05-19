@@ -53,28 +53,26 @@ void print_stats(struct data_container* data){
     int i = 0;
     int finished = 0;
     while(data->results[i].id < data->max_ads && finished == 0){
-        if (data->results[i+1].id == 0){
+        if (data->results[i].status == '\0'){
             finished = 1;
         }
-        
-        // Imprime as estatIsticas para o ficheiro stats.txt
-        fprintf(stats_file,"\nAdmission: %d\n",data->results[i].id);
-        fprintf(stats_file,"Status: %c\n",data->results[i].status);
-        fprintf(stats_file,"Patient id: %d\n",data->results[i].receiving_patient);
-        fprintf(stats_file,"Receptionist id: %d\n",data->results[i].receiving_receptionist);
-        fprintf(stats_file,"Doctor id: %d\n",data->results[i].receiving_doctor);
-        fprintf(stats_file,"Start time: %s\n",format_time(data->results[i].create_time));
-        fprintf(stats_file,"Patient time: %s\n",format_time(data->results[i].patient_time));
-        fprintf(stats_file,"Receptionist time: %s\n",format_time(data->results[i].receptionist_time));
-        fprintf(stats_file,"Doctor time: %s\n",format_time(data->results[i].doctor_time));
-        totalSecs = data->results[i].doctor_time.tv_sec - data->results[i].create_time.tv_sec;
-        totalNSecs = (((data->results[i].doctor_time.tv_nsec - data->results[i].create_time.tv_nsec)/1000000)%1000);
-        printf("%ld\n",data->results[i].create_time.tv_sec);
-        printf("%ld\n",data->results[i].create_time.tv_nsec);
-        printf("%ld\n",data->results[i].doctor_time.tv_sec);
-        printf("%ld\n",data->results[i].doctor_time.tv_nsec);
-        fprintf(stats_file,"Total time: %ld.%03ld\n\n",totalSecs,totalNSecs);
+        else{
+            // Imprime as estatIsticas para o ficheiro stats.txt
+            fprintf(stats_file,"\nAdmission: %d\n",data->results[i].id);
+            fprintf(stats_file,"Status: %c\n",data->results[i].status);
+            fprintf(stats_file,"Patient id: %d\n",data->results[i].receiving_patient);
+            fprintf(stats_file,"Receptionist id: %d\n",data->results[i].receiving_receptionist);
+            fprintf(stats_file,"Doctor id: %d\n",data->results[i].receiving_doctor);
+            fprintf(stats_file,"Start time: %s\n",format_time(data->results[i].create_time));
+            fprintf(stats_file,"Patient time: %s\n",format_time(data->results[i].patient_time));
+            fprintf(stats_file,"Receptionist time: %s\n",format_time(data->results[i].receptionist_time));
+            fprintf(stats_file,"Doctor time: %s\n",format_time(data->results[i].doctor_time));
+            
+            totalSecs = data->results[i].doctor_time.tv_sec - data->results[i].create_time.tv_sec;
+            totalNSecs = (((data->results[i].doctor_time.tv_nsec - data->results[i].create_time.tv_nsec)/1000000)%1000);
 
+            fprintf(stats_file,"Total time: %ld.%03ld\n\n",totalSecs,totalNSecs);
+        }
         i++;
     }
     

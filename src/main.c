@@ -15,12 +15,14 @@
 #include "stats.h"
 #include "log.h"
 #include "hosptime.h"
+#include "hospsignal.h"
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 void main_args(int argc, char* argv[], struct data_container* data) {
     if (argc != 2) {
@@ -80,25 +82,28 @@ void user_interaction(struct data_container* data, struct communication* comm, s
     log_create(data);
     char input[20]; 
     int ad_counter = 0;
-    while (*data->terminate != 1)
-    {
-        printf(">Introduza um dos 5 comandos: ad (paciente) (mEdico), info, help, status, end):");
-        printf("\n");
+    printf("[Main] Ações disponiveis\n"
+        "[Main] ad (paciente) (medico) - cria uma nova admissAo\n"
+        "[Main] info id - consultar o estado de uma admissão\n"
+        "[Main] help - imprime informação sobre as ações disponíveis.\n"
+        "[Main] status - dA o status da execuCAo\n"
+        "[Main] end - termina a execução do hOSpital.\n");
+    while (*data->terminate != 1){
+        printf("\n[Main] Introduza ação:\n");
         scanf("%s", input);
         if(strcmp(input,"info") == 0){
             read_info(data,sems);
         }
         else if(strcmp(input,"help") == 0){
             log_update(data,"help", NULL);
-            printf("Pode introduzir somente as seguintes instrucOes: \n"
-            "ad (paciente) (mEdico) - cria uma nova admissAo, atravEs da funcAo create_request\n"
-            "info - estado de uma admissAo\n"
-            "help - informacAo sobre os comandos disponIveis\n"
-            "end - termina o execucAo do hOSpital\n"
-            "status - dA o status da execuCAo\n");
+            printf("[Main] Ações disponiveis\n"
+            "[Main] ad (paciente) (medico) - cria uma nova admissAo\n"
+            "[Main] info id - consultar o estado de uma admissão\n"
+            "[Main] help - imprime informação sobre as ações disponíveis.\n"
+            "[Main] status - dA o status da execuCAo\n"
+            "[Main] end - termina o execucAo do hOSpital\n");
         }
         else if(strcmp(input,"end") == 0){
-            log_update(data,"end", NULL);
             end_execution(data, comm,sems);
             exit(0);
         }
@@ -110,13 +115,7 @@ void user_interaction(struct data_container* data, struct communication* comm, s
             print_status(data,sems);
         }
         else{
-            printf("A palavra introduzida nao E vAlida.\n" 
-            "Pode introduzir somente as seguintes instrucOes: \n"
-            "ad (paciente) (médico) - cria uma nova admissAo, atravEs da funcAo create_request\n"
-            "info - estado de uma admissAo\n"
-            "help - informacAo sobre os comandos disponIveis\n"
-            "end - termina o execucAo do hOSpital\n"
-            "status - dA o status da execuCAo\n");
+            printf("Ação não reconhecida, insira 'help' para assistência.\n");
         }
     }
 }
@@ -174,15 +173,14 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     int patient_id = 0;
     int doctor_id = 0;
 
-    printf("Insira id do paciente: ");
     patient_id = IDCheckerPatient(patient_id, data);
-    printf("Insira id do medico pretendido: ");
     doctor_id = IDCheckerDoctor(doctor_id, data);
     int args[2];
     args[0] = patient_id;
     args[1] = doctor_id;
     log_update(data,"ad",args);
 
+    // Inicializar a admissAo com os valores default
     newAd.id = *ad_counter;
     newAd.requesting_patient = patient_id;
     newAd.requested_doctor = doctor_id;
@@ -190,21 +188,17 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
     newAd.receiving_receptionist = -1;
     newAd.receiving_doctor = -1;
     newAd.status = 'M';
-    get_current_time(&newAd.create_time);
-
-    printf("create request1");
 
     semaphore_lock(sems->results_mutex);
     data->results[newAd.id] = newAd;
     semaphore_unlock(sems->results_mutex);
 
-    printf("create request2");
-
     produce_begin(sems->main_patient);
+    get_current_time(&newAd.create_time);
+    printf("[Main] A criar a admissão %d para o paciente %d destinada ao médico %d!\n",newAd.id,patient_id,doctor_id);
+    printf("[Main] A admissão %d foi criada!\n",newAd.id);
     write_main_patient_buffer(comm->main_patient, data->buffers_size, &newAd);
     produce_end(sems->main_patient);
-
-    printf("O id da nova admissao eh: %d\n", newAd.id);
     
     *ad_counter += 1;
 }
@@ -212,7 +206,6 @@ void create_request(int* ad_counter, struct data_container* data, struct communi
 void read_info(struct data_container* data, struct semaphores* sems){
     //Perguntar pela admisssion
     int admission_id;
-    printf(">Qual o id de admissao a consultar? ");
     scanf("%d", &admission_id);
     log_update(data,"info", &admission_id);
     int i = 0;
@@ -223,14 +216,9 @@ void read_info(struct data_container* data, struct semaphores* sems){
         while (found != 1 && i < MAX_RESULTS) {
             if (data->results[i].id == admission_id){
                 found = 1;
-                struct admission* ad = &data->results[i];
-                printf("Informacoes da admissao '%d':\n", admission_id);
-                printf("Estado da admissao: %c\n", ad->status);
-                printf("id do paciente que fez o pedido: %d\n", ad->requesting_patient);
-                printf("id do medico requisitado: %d\n", ad->requested_doctor);
-                printf("id do paciente que recebeu a admissao: %d\n", ad->receiving_patient);
-                printf("id do recepcionista que realizou a admissao: %d\n", ad->receiving_receptionist);
-                printf("id do medico que realizou a consulta: %d\n", ad->receiving_doctor);
+                printf("[Main] A admissão %d com estado %c requisitada pelo paciente %d ao médico %d, foi recebida pelo paciente %d, admitida pelo rececionista %d, e concluída pelo médico %d!",
+                data->results[i].id,data->results[i].status,data->results[i].requesting_patient,data->results[i].requested_doctor,
+                data->results[i].receiving_patient,data->results[i].receiving_receptionist,data->results[i].receiving_doctor);
             }
             i++;
         }   
@@ -245,7 +233,7 @@ void read_info(struct data_container* data, struct semaphores* sems){
 *Imprime os patient_ids contidos no data
 */
 void print_patient_ids(struct data_container* data) {
-    printf("Patient ids:");
+    printf("[Main] patient_pids: ");
     for (int i = 0; i < data->n_patients; i++){
         if (i == 0) {
             printf("[%d,", data->patient_pids[i]);
@@ -264,7 +252,7 @@ void print_patient_ids(struct data_container* data) {
 *Imprime os receptionist_ids contidos no data
 */
 void print_receptionist_ids(struct data_container* data){
-    printf("Receptionist ids:");
+    printf("[Main] receptionist_pids: ");
     for (int i = 0; i < data->n_receptionists; i++){
         if (i == 0) {
             printf("[%d,", data->receptionist_pids[i]);
@@ -283,7 +271,7 @@ void print_receptionist_ids(struct data_container* data){
 *Imprime os doctor_ids contidos no data
 */
 void print_doctor_ids(struct data_container* data) {
-    printf("Doctor ids:");
+    printf("[Main] doctor_pids: ");
     for (int i = 0; i < data->n_doctors; i++){
         if (i == 0) {
             printf("[%d,", data->doctor_pids[i]);
@@ -302,7 +290,7 @@ void print_doctor_ids(struct data_container* data) {
 *Imprime os results contidos no data
 */
 void print_data_results(struct data_container* data) {
-    printf("Admission results:");
+    printf("[Main] results: ");
 
     for (int i = 0; i < MAX_RESULTS; i++) {
         if (i == 0) {
@@ -316,11 +304,11 @@ void print_data_results(struct data_container* data) {
 }
 
 void print_status(struct data_container* data, struct semaphores* sems) {
-    printf("max_ads:%d\n",data->max_ads);
-    printf("buffers_size:%d\n",data->buffers_size);
-    printf("n_patient:%d\n",data->n_patients);
-    printf("n_receptionists:%d\n",data->n_receptionists);
-    printf("n_doctors:%d\n",data->n_doctors);
+    printf("[Main] max_ads: %d\n",data->max_ads);
+    printf("[Main] buffers_size: %d\n",data->buffers_size);
+    printf("[Main] n_patients: %d\n",data->n_patients);
+    printf("[Main] n_receptionists: %d\n",data->n_receptionists);
+    printf("[Main] n_doctors: %d\n",data->n_doctors);
     printf("\n");
 
     print_patient_ids(data);
@@ -333,15 +321,26 @@ void print_status(struct data_container* data, struct semaphores* sems) {
 
 void end_execution(struct data_container* data, struct communication* comm, struct semaphores* sems){
     *data->terminate = 1;
+    log_update(data,"end", NULL);
     wakeup_processes(data,sems);
     wait_processes(data);
     write_statistics(data);
     destroy_semaphores(sems);
     destroy_memory_buffers(data,comm);
+
+    deallocate_dynamic_memory(data);
+    deallocate_dynamic_memory(comm->main_patient);
+    deallocate_dynamic_memory(comm->patient_receptionist);
+    deallocate_dynamic_memory(comm->receptionist_doctor);
+    deallocate_dynamic_memory(comm);
+    deallocate_dynamic_memory(sems->main_patient);
+    deallocate_dynamic_memory(sems-> patient_receptionist);
+    deallocate_dynamic_memory(sems-> receptionist_doctor);
+    deallocate_dynamic_memory(sems);
 }
 
 void wait_processes(struct data_container* data) {
-    //espera pelo pacients
+    //espera pelo patients
     for (int i = 0; i < data->n_patients; i++) {
         wait_process(data->patient_pids[i]);
     }
@@ -358,7 +357,19 @@ void wait_processes(struct data_container* data) {
 void write_statistics(struct data_container* data){
     //verifica-se a flag terminate esta a 1, o que indica que o programa ja terminou
     if(*data->terminate == 1){
-        print_stats(data); 
+        print_stats(data);
+        for (int i = 0; i < data->n_patients; i++)
+        {
+            printf("O numero de admissoes solicitadas pelo paciente %d, corresponde a %d\n",i, data->patient_stats[i]);
+        }
+        for (int i = 0; i < data->n_receptionists; i++)
+        {
+            printf("O numero de admissoes realizadas pelo rececionista %d, corresponde a %d\n",i, data->receptionist_stats[i]);
+        }
+        for (int i = 0; i < data->n_doctors; i++)
+        {
+            printf("O numero de admissoes atendidas pelo medico %d, corresponde a %d\n",i, data->doctor_stats[i]);
+        }
     }
 }
 
@@ -454,16 +465,6 @@ int main(int argc, char *argv[]) {
     create_shared_memory_buffers(data, comm);
     create_semaphores(data, sems);
     launch_processes(data,comm,sems);
+    signal_handlers(data,comm,sems);
     user_interaction(data, comm,sems);
-    
-    //release memory before terminating
-    deallocate_dynamic_memory(data);
-    deallocate_dynamic_memory(comm->main_patient);
-    deallocate_dynamic_memory(comm->patient_receptionist);
-    deallocate_dynamic_memory(comm->receptionist_doctor);
-    deallocate_dynamic_memory(comm);
-    deallocate_dynamic_memory(sems->main_patient);
-    deallocate_dynamic_memory(sems-> patient_receptionist);
-    deallocate_dynamic_memory(sems-> receptionist_doctor);
-    deallocate_dynamic_memory(sems);
 }

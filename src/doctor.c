@@ -30,25 +30,25 @@ int execute_doctor(int doctor_id, struct data_container* data, struct communicat
         if(newAd->id !=-1){
             doctor_process_admission(newAd,doctor_id,data,sems);
         }
+        
     }
     return count_doctor_stats(data); //numero de consultas realizadas
 }
 
 void doctor_receive_admission(struct admission* ad, int doctor_id, struct data_container* data, struct communication* comm, struct semaphores* sems){
+    semaphore_lock(sems->terminate_mutex);
     if (*data->terminate == 1) {
+        semaphore_unlock(sems->terminate_mutex);
         return; // ja nao ha mais admissoes para admitir
     }
-    else{
-        consume_begin(sems->receptionist_doctor);
-
-        read_receptionist_doctor_buffer(comm->receptionist_doctor, doctor_id, data->buffers_size, ad);
-
-        consume_end(sems->receptionist_doctor);
-    }
+    semaphore_unlock(sems->terminate_mutex);
+   
+    consume_begin(sems->receptionist_doctor);
+    read_receptionist_doctor_buffer(comm->receptionist_doctor, doctor_id, data->buffers_size, ad);
+    consume_end(sems->receptionist_doctor);
 }
 
 void doctor_process_admission(struct admission* ad, int doctor_id, struct data_container* data, struct semaphores* sems){
-    produce_begin(sems->receptionist_doctor);
     //AlteraCAo do receiving_doctor
     ad->receiving_doctor = doctor_id;
     
@@ -59,9 +59,9 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
     //Caso tenha espaCo
     if (ad->id < data->max_ads) {
         ad->status = 'A';
-        produce_end(sems->receptionist_doctor);
 
         semaphore_lock(sems->doctor_stats_mutex);
+        printf("[Doctor %d] Recebi a admissão %d!\n",doctor_id,ad->id);
         docStats[doctor_id]++;
         semaphore_unlock(sems->doctor_stats_mutex);
 
@@ -69,7 +69,6 @@ void doctor_process_admission(struct admission* ad, int doctor_id, struct data_c
     //Caso nAo tenha espaCo
     else {
         ad->status = 'N';
-        produce_end(sems->receptionist_doctor);
     }
     //Atualizar a admission no data
     semaphore_lock(sems->results_mutex);
